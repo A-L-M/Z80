@@ -33,6 +33,7 @@ void  getInstruction(uint8_t opcode) {
 			fputs("LD (BC),A");
 			break;
 		case 0x03:									//	INC BC
+			fputs("INC BC");
 			break;									
 		case 0x04:									//	INC B
 			break;			
