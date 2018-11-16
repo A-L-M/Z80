@@ -1,22 +1,44 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
-#define CODESIZE  8192L                                    
+#include <string.h>
 
-uint8_t   opcodes[CODESIZE];
-uint8_t   opcodes_flags[CODESIZE];
+string getByte();
 
-uint8_t  Opcode_Len(unsigned int opcode_position) {
-	
-	uint8_t  len;
-	switch(opcodes[opcode_position]){
+int main(string HEX_FILE){
+	string opcode;
+	fopen(HEX_FILE, 'r');
+	while(!END){
+
+	}
+	return EXIT_SUCCESS;
+}
+
+void  getInstruction(uint8_t opcode) {
+	string argument;
+	string argument2;
+
+	switch(opcode){
 		
-		case 0x00:			//	NOP
-		case 0x01:			//	LD BC nn
-		case 0x02: 			//	LD (BC), A
-		case 0x03:			//	INC BC
+		case 0x00:									//	NOP
+			fputs("NOP");
+			break;
+		case 0x01:									//	LD BC, nn
+			argument1 = getByte();
+			argument2 = getByte();
+			strcat(argument2, argument1);
+			fprintf("LD BC,%s\n", argument2);
+			break;
+		case 0x02: 									//	LD (BC), A
+			fputs("LD (BC),A");
+			break;
+		case 0x03:									//	INC BC
 		case 0x04:			//	INC B
 		case 0x05:			//	DEC B
 		case 0x06:			//	LD B, n
+			argument1 = getByte();
+			fprintf("LD B,%s\n", argument1);
+			break;
 		case 0x07:			//	RLCA
 		case 0x08:          //	EX AF, AF'
 		case 0x09:			//	ADD HL, BC
@@ -35,15 +57,14 @@ uint8_t  Opcode_Len(unsigned int opcode_position) {
 		case 0x15:			//	DEC D
 		case 0x16:			//	LD D, n
 		case 0x17:			//	RLA
-		case 0x18:
-		
-		case 0x19:
-		case 0x1A:
-		case 0x1B:
-		case 0x1C:
-		case 0x1D:
-		case 0x1E:
-		case 0x1F:
+		case 0x18:			//  JR nn
+		case 0x19:			//  ADD HL, DE
+		case 0x1A:			//	LD A, (DE)
+		case 0x1B:			//	DEC DE
+		case 0x1C:			// 	INC E
+		case 0x1D:			//	DEC E
+		case 0x1E:			//	LD E, n
+		case 0x1F:			//	RRA
 		
 		case 0x20:
 		case 0x21:
