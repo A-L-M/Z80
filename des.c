@@ -3,31 +3,26 @@
 #include <stdint.h>
 #include <string.h>
 
-char *getByte();
-char *getInstruction();
+//char *getByte();
+char *getInstruction(uint8_t);
 
 int main(int argvc, char **argv) {
     FILE *archive;
-    char *line = NULL;
-    size_t len = 0;
-    ssize_t read;
+    char line[150];
+    char CL[1];
 
-    archive = fopen(argv[1], "r");
+    archive = fopen("test.txt", "r");
     if (archive == NULL){
         puts("Unable to open the file");
     } else {
-        
-        while ( (read = getline(&line, &len, archive)) != EOF ) {
-            printf("%s", line);
-            char *size;
-            size[0] = line[1];
-            size[1] = line[2];
-            uint8_t lineSize = (uint8_t) size;
-
+        while(fgets(line, sizeof(line), archive) != NULL)
+        {
+            printf("%s\n", line);
+			//strcpy(CL, line[1]);
+			//strcat(CL, line[2]);
+			//printf("%s", CL);
         }
         fclose(archive);
-        if (line)   
-            free(line);
     }
     return EXIT_SUCCESS;
 }
@@ -40,7 +35,7 @@ char  *getInstruction(uint8_t opcode) {
 	char *argument1;
 	char *argument2;
 
-	switch(opcode){
+	/*switch(opcode){
 		
 		case 0x00:									//	NOP
 			return "NOP";
@@ -67,7 +62,7 @@ char  *getInstruction(uint8_t opcode) {
 		case 0x07:									//	RLCA
 			return "RLCA";
 		case 0x08:          						//	EX AF, AF'
-			return "EX AF, AF'"
+			return "EX AF, AF'";
 		case 0x09:									//	ADD HL, BC
 			return "ADD HL, BC";
 		case 0x0A:									//	LD A,(BC)
@@ -577,9 +572,9 @@ char  *getInstruction(uint8_t opcode) {
 		case 0xFE:									//  CP n
 			return;
 		case 0xFF:									//  RST 38H
-			return;*/
+			return;
 		default:
 			printf("que es estoo");
 			return "ERROR CRITICO";
-	}
+	}*/
 }

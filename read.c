@@ -10,7 +10,7 @@ int main(int argvc, char **argv) {
     char line[100];
     char byte[2] = "6A";
 
-    archive = fopen(argv[1], "r");
+    archive = fopen("test.txt", "r");
     if (archive == NULL){
         puts("Unable to open the file");
     } else {
