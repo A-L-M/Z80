@@ -5,13 +5,25 @@
 
 string getByte();
 
-int main(string HEX_FILE){
-	string opcode;
-	fopen(HEX_FILE, 'r');
-	while(!END){
+int main(int argvc, char *argv[]) {
+    FILE * archive;
+    char * line = NULL;
+    size_t len = 0;
+    ssize_t read;
 
-	}
-	return EXIT_SUCCESS;
+    archive = fopen(argv[1], "r");
+    if (archive == NULL){
+        puts("Unable to open the file");
+    } else {
+        
+        while ( (read = getline(&line, &len, archive)) != EOF ) {
+            printf("%s", line);
+        }
+        fclose(archive);
+        if (line)   
+            free(line);
+    }
+    return EXIT_SUCCESS;
 }
 
 void  getInstruction(uint8_t opcode) {
