@@ -3,47 +3,78 @@
 #include <stdint.h>
 #include <string.h>
 
-//char *getByte();
-char *getInstruction(uint8_t);
+char *getInstruction(int, char[]);
+void getByte(char [], char []);
+void complete(const char *, char [], char []);
+
+int i;  //contador
+char buffer[20];
 
 int main(int argvc, char **argv) {
-    FILE *archive;
-    char line[100];
-    char byte[3] = "6A";
+    FILE *file;
+    char line[45];
+    char byte[3];
+    int dbytes_in_line;  //cantidad de bytes que representan codigos de operacion en una linea del archivo
+    int opcode;  //codigo de operacion, guardado en base 10
+    char *mnemonico;
 
-    archive = fopen("test.txt", "r");
-    if (archive == NULL){
+    file = fopen("test.txt", "r");
+    if (file == NULL){
         puts("Unable to open the file");
     } 
 	else 
 	{
-        while ( fgets(line, sizeof(line), archive) != NULL ) 
+        while ( fgets(line, sizeof(line), file) != NULL ) 
 		{
             byte[0] = line[1];
             byte[1] = line[2];
-            int intOpcode = (int) strtol(byte, NULL, 16);
-            printf("%i\n", intOpcode);
+            dbytes_in_line = (int) strtol(byte, NULL, 16);  //Toma la cadena almacenada en byte[] y la convierte a int, leyendo en base 16
+            dbytes_in_line = (dbytes_in_line * 2) + 9;  //dos digitos por byte, +9 digitos que se ignoran al inicio
+            for(i=9; i < dbytes_in_line;)
+			{
+				getByte(byte, line);
+				opcode = (int) strtol(byte, NULL, 16);
+				mnemonico = getInstruction(opcode, line);
+				printf("%s\n", mnemonico);
+			}
+			dbytes_in_line = 0;
+            printf("\n");
         }
-        fclose(archive);
+        fclose(file);
     }
     return EXIT_SUCCESS;
 }
 
-char  *getInstruction(uint8_t opcode) {
-	char *argument1;
-	char *argument2;
+void getByte(char argument[], char line[]){
+	argument[0] = line[i];
+	argument[1] = line[i+1];
+	i += 2;
+}
 
-	/*switch(opcode){
+void complete(const char *arg1, char arg2[], char arg3[]){  //junta primera parte de mnemonico con n o nn, inserta H al final
+	char aux[20];
+	strcpy(aux, arg1);
+	strcat(arg2, arg3);
+	strcat(aux, arg2);
+	strcat(aux, "H");
+	strcpy(buffer, aux);
+}
+
+char * getInstruction(int opcode, char line[]) {
+	char argument1[20];  //byte mas significativo
+	char argument2[20];  //byte menos significativo
+	
+	/*AGREGAR H AL FINAL DE HEXADECIMAL*/
+	/*SI LA INSTRUCCION SE CORTA PORQUE SE ACABO LA LINEA FALLA, se puede poner getNewLine()*/
+	switch(opcode){
 		
 		case 0x00:									//	NOP
 			return "NOP";
 		case 0x01:									//	LD BC, nn
-			argument1 = getByte();
-			argument2 = getByte();
-			strcat(argument2, argument1);
-			strcpy(argument1, "LD BC, ");
-			strcat(argument1, argument2);
-			return argument1;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("LD BC, ", argument2, argument1);
+			return buffer;
 		case 0x02: 									//	LD (BC), A
 			return "LD (BC),A";
 		case 0x03:									//	INC BC
@@ -53,10 +84,10 @@ char  *getInstruction(uint8_t opcode) {
 		case 0x05:									//	DEC B
 			return "DEC B";									
 		case 0x06:									//	LD B, n
-			argument1 = getByte();
-			strcpy(argument2, "LD B, ");
-			strcat(argument2, argument1);
-			return argument2;
+			getByte(argument1, line);
+			strcpy(argument2, "");
+			complete("LD B, ", argument1, argument2);
+			return buffer;
 		case 0x07:									//	RLCA
 			return "RLCA";
 		case 0x08:          						//	EX AF, AF'
@@ -72,22 +103,20 @@ char  *getInstruction(uint8_t opcode) {
 		case 0x0D:									//	DEC C
 			return "DEC C";
 		case 0x0E:									//	LD C, n 
-			argument1 = getByte();
-			strcpy(argument2, "LD C, ");
-			strcat(argument2, argument1);
-			return argument2;
+			getByte(argument1, line);
+			strcpy(argument2, "");
+			complete("LD C, ", argument1, argument2);
+			return buffer;
 		case 0x0F:									//	RRCA
 			return "RRCA";
 		case 0x10:									//	DJNZ, e
 			// funcion getEti()
-			return;
+			return "Incompleto";
 		case 0x11:									//	LD DE, nn
-			argument1 = getByte();
-			argument2 = getByte();
-			strcat(argument2, argument1);
-			strcpy(argument1, "LD DE, ");
-			strcat(argument1, argument2);
-			return argument1;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("LD DE, ", argument2, argument1);
+			return buffer;
 		case 0x12:									//	LD (DE), A
 			return "LD (DE), A";
 		case 0x13:									//	INC DE
@@ -97,15 +126,15 @@ char  *getInstruction(uint8_t opcode) {
 		case 0x15:									//	DEC D
 			return "DEC D";
 		case 0x16:									//	LD D, n
-			argument1 = getByte();
-			strcpy(argument2, "LD D, ");
-			strcat(argument2, argument1);
-			return argument2;
+			getByte(argument1, line);
+			strcpy(argument2, "");
+			complete("LD D, ", argument1, argument2);
+			return buffer;
 		case 0x17:									//	RLA
 			return "RLA";
 		case 0x18:									//  JR e
 			// funcion getEti()
-			return;
+			return "Incompleto";
 		case 0x19:									//  ADD HL, DE
 			return "ADD HL, DE";
 		case 0x1A:									//	LD A, (DE)
@@ -117,186 +146,224 @@ char  *getInstruction(uint8_t opcode) {
 		case 0x1D:									//	DEC E
 			return "DEC E";
 		case 0x1E:									//	LD E, n
-			argument1 = getByte();
-			strcpy(argument2, "LD E, ");
-			strcat(argument2, argument1);
-			return argument2;
+			getByte(argument1, line);
+			strcpy(argument2, "");
+			complete("LD E, ", argument1, argument2);
+			return buffer;
 		case 0x1F:									//	RRA
 			return "RRA";
 		case 0x20:									//  JR NZ, e
-			return;
+			// funcion getEti()
+			return "Incompleto";
 		case 0x21:									//  LD HL, nn
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("LD HL, ", argument2, argument1);
+			return buffer;
 		case 0x22:									//  LD (nn), HL
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("LD (", argument2, argument1);
+			strcat(buffer, "), HL");
+			return buffer;
 		case 0x23:									//  INC HL
-			return;
+			return "INC HL";
 		case 0x24:									//  INC H
-			return;
+			return "INC H";
 		case 0x25:									//  DEC H
-			return;
+			return "DEC H";
 		case 0x26:									//  LD H, n
-			return;
+			getByte(argument1, line);
+			strcpy(argument2, "");
+			complete("LD H, ", argument1, argument2);
+			return buffer;
 		case 0x27:									//  DAA
-			return;
+			return "DAA";
 		case 0x28:									//  JR Z, e
-			return;
-		case 0x29:									//  ADD HL,HL
-			return;
+			//funcion getEti()
+			return "Incompleto";
+		case 0x29:									//  ADD HL, HL
+			return "ADD HL, HL";
 		case 0x2A:									//  LD HL, (nn)
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("LD HL, (", argument2, argument1);
+			strcat(buffer, ")");
+			return buffer;
 		case 0x2B:									//  DEC HL
-			return;
+			return "DEC HL";
 		case 0x2C:									//  INC L
-			return;
+			return "INC L";
 		case 0x2D:									//  DEC L
-			return;
+			return "DEC L";
 		case 0x2E:									//  LD L, n
-			return;
+			getByte(argument1, line);
+			strcpy(argument2, "");
+			complete("LD L, ", argument1, argument2);
+			return buffer;
 		case 0x2F:									//  CPL
-			return;
+			return "CPL";
 		case 0x30:									//  JR NC, e
-			return;
+			//funcion getEti()
+			return "Incompleto";
 		case 0x31:									//  LD SP, nn
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("LD SP, ", argument2, argument1);
+			return buffer;
 		case 0x32: 									//  LD (nn), A
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("LD (", argument2, argument1);
+			strcat(buffer, "), A");
+			return buffer;
 		case 0x33:									//  INC SP
-			return;
+			return "INC SP";
 		case 0x34:									//  INC (HL)
-			return;
+			return "INC (HL)";
 		case 0x35:									//  DEC (HL)
-			return;
+			return "DEC (HL)";
 		case 0x36:									//  LD (HL), n
-			return;
+			getByte(argument1, line);
+			strcpy(argument2, "");
+			complete("LD (HL), ", argument1, argument2);
+			return buffer;
 		case 0x37:									//  SCF
-			return;
+			return "SCF";
 		case 0x38:									//  JR C, e
-			return;
+			//funcion getEti()
+			return "Incompleto";
 		case 0x39:									//	ADD HL, SP
-			return;
+			return "ADD HL, SP";
 		case 0x3A:									//  LD A, (nn)
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("LD A, (", argument2, argument1);
+			strcat(buffer, ")");
+			return buffer;
 		case 0x3B:									//  DEC SP
-			return;
+			return "DEC SP";
 		case 0x3C:									//  INC A
-			return;
+			return "INC A";
 		case 0x3D:									//  DEC A
-			return;
+			return "DEC A";
 		case 0x3E:									//  LD A, n
-			return;
+			getByte(argument1, line);
+			strcpy(argument2, "");
+			complete("LD A, ", argument1, argument2);
+			return buffer;
 		case 0x3F:									//  CCF
-			return;
+			return "CCF";
 		case 0x40:									//  LD B, B
-			return;
+			return "LD B, B";
 		case 0x41:									//  LD B, C
-			return;
+			return "LD B, C";
 		case 0x42: 									//  LD B, D
-			return;
+			return "LD B, D";
 		case 0x43:									//  LD B, E
-			return;
+			return "LD B, E";
 		case 0x44:									//  LD B, H
-			return;
+			return "LD B, H";
 		case 0x45:									//  LD B, L
-			return;
+			return "LD B, L";
 		case 0x46:									//  LD B, (HL)
-			return;
+			return "LD B, (HL)";
 		case 0x47:									//  LD B, A
-			return;
+			return "LD B, A";
 		case 0x48:									//  LD C, B
-			return;
+			return "LD C, B";
 		case 0x49:									//  LD C, C
-			return;
+			return "LD C, C";
 		case 0x4A:									//  LD C, D
-			return;
+			return "LD C, D";
 		case 0x4B:									//  LD C, E
-			return;
+			return "LD C, E";
 		case 0x4C:									//  LD C, H
-			return;
+			return "LD C, H";
 		case 0x4D:									//  LD C, L
-			return;
+			return "LD C, L";
 		case 0x4E:									//  LD C, (HL)
-			return;
+			return "LD C, (HL)";
 		case 0x4F:									//  LD C, A
-			return;
+			return "LD C, A";
 		case 0x50:									//  LD D, B
-			return;
+			return "LD D, B";
 		case 0x51:									//  LD D, C
-			return;
+			return "LD D, C";
 		case 0x52: 									//  LD D, D
-			return;
+			return "LD D, D";
 		case 0x53:									//  LD D, E
-			return;
+			return "LD D, E";
 		case 0x54:									//  LD D, H
-			return;
+			return "LD D, H";
 		case 0x55:									//  LD D, L
-			return;
+			return "LD D, L";
 		case 0x56:									//  LD D, (HL)
-			return;
+			return "LD D, (HL)";
 		case 0x57:									//  LD D, A
-			return;
+			return "LD D, A";
 		case 0x58:									//  LD E, B
-			return;
+			return "LD E, B";
 		case 0x59:									//  LD E, C
-			return;
+			return "LD E, C";
 		case 0x5A:									//  LD E, D
-			return;
+			return "LD E, D";
 		case 0x5B:									//  LD E, E
-			return;
+			return "LD E, E";
 		case 0x5C:									//  LD E, H
-			return;
+			return "LD E, H";
 		case 0x5D:									//  LD E, L
-			return;
+			return "LD E, L";
 		case 0x5E:									//  LD E, (HL)
-			return;
+			return "LD E, (HL)";
 		case 0x5F:									//  LD E, A
-			return;
+			return "LD E, A";
 		case 0x60:									//  LD H, B
-			return;
+			return "LD H, B";
 		case 0x61:									//  LD H, C
-			return;
+			return "LD H, C";
 		case 0x62: 									//  LD H, D
-			return;
+			return "LD H, D";
 		case 0x63:									//  LD H, E
-			return;
+			return "LD H, E";
 		case 0x64:									//  LD H, H
-			return;
+			return "LD H, H";
 		case 0x65:									//  LD H, L
-			return;
+			return "LD H, L";
 		case 0x66:									//  LD H, (HL)
-			return;
+			return "LD H, (HL)";
 		case 0x67:									//  LD H, A
-			return;
+			return "LD H, A";
 		case 0x68:									//  LD L, B
-			return;
+			return "LD L, B";
 		case 0x69:									//  LD L, C
-			return;
+			return "LD L, C";
 		case 0x6A:									//  LD L, D
-			return;
+			return "LD L, D";
 		case 0x6B:									//  LD L, E
-			return;
+			return "LD L, E";
 		case 0x6C:									//  LD L, H
-			return;
+			return "LD L, H";
 		case 0x6D:									//  LD L, L
-			return;
+			return "LD L, L";
 		case 0x6E:									//  LD L, (HL)
-			return;
+			return "LD L, (HL)";
 		case 0x6F:									//  LD L, A
-			return;
+			return "LD L, A";
 		case 0x70:									//  LD (HL), B
-			return;
+			return "LD (HL), B";
 		case 0x71:									//  LD (HL), C
-			return;
+			return "LD (HL), C";
 		case 0x72: 									//  LD (HL), D
-			return;
+			return "LD (HL), D";
 		case 0x73:									//  LD (HL), E
-			return;
+			return "LD (HL), E";
 		case 0x74:									//  LD (HL), H
-			return;
+			return "LD (HL), H";
 		case 0x75:									//  LD (HL), L
-			return;
+			return "LD (HL), L";
 		case 0x76:									//  HALT
-			return;
+			return "HALT";
 		case 0x77:									//  LD (HL), A
 			return;
 		case 0x78:									//  LD A, B
@@ -574,5 +641,5 @@ char  *getInstruction(uint8_t opcode) {
 		default:
 			printf("Error: formato incorrecto");
 			return "ERROR";
-	}*/
+	}
 }
