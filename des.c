@@ -8,28 +8,26 @@ char *getInstruction(uint8_t);
 
 int main(int argvc, char **argv) {
     FILE *archive;
-    char line[150];
-    char CL[1];
+    char line[100];
+    char byte[3] = "6A";
 
     archive = fopen("test.txt", "r");
     if (archive == NULL){
         puts("Unable to open the file");
-    } else {
-        while(fgets(line, sizeof(line), archive) != NULL)
-        {
-            printf("%s\n", line);
-			//strcpy(CL, line[1]);
-			//strcat(CL, line[2]);
-			//printf("%s", CL);
+    } 
+	else 
+	{
+        while ( fgets(line, sizeof(line), archive) != NULL ) 
+		{
+            byte[0] = line[1];
+            byte[1] = line[2];
+            int intOpcode = (int) strtol(byte, NULL, 16);
+            printf("%i\n", intOpcode);
         }
         fclose(archive);
     }
     return EXIT_SUCCESS;
 }
-
-
-
-
 
 char  *getInstruction(uint8_t opcode) {
 	char *argument1;
@@ -125,7 +123,7 @@ char  *getInstruction(uint8_t opcode) {
 			return argument2;
 		case 0x1F:									//	RRA
 			return "RRA";
-		/*case 0x20:									//  JR NZ, e
+		case 0x20:									//  JR NZ, e
 			return;
 		case 0x21:									//  LD HL, nn
 			return;
@@ -574,7 +572,7 @@ char  *getInstruction(uint8_t opcode) {
 		case 0xFF:									//  RST 38H
 			return;
 		default:
-			printf("que es estoo");
-			return "ERROR CRITICO";
+			printf("Error: formato incorrecto");
+			return "ERROR";
 	}*/
 }
