@@ -544,6 +544,527 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 			getByte(byte, line);
 			opcode = (int) strtol(byte, NULL, 16);
 			// switch para CB
+						getByte(byte, line);
+			opcode = (int) strtol(byte, NULL, 16);
+			// switch para CB
+			switch(opcode){
+				
+				case 0x00:									//	RLC B
+					return "RLC B";
+				case 0x01:									//	RLC C
+					return "RLC C";
+				case 0x02: 									//	RLC D
+					return "RLC D";
+				case 0x03:									//	RLC E
+					return "RLC E";									
+				case 0x04:									//	RLC H
+					return "RLC H";									
+				case 0x05:									//	RLC H
+					return "RLC L";									
+				case 0x06:									//	RLC (HL)
+					return "RLC (HL)";
+				case 0x07:									//	RLC A
+					return "RLC A";
+				case 0x08:          						//	RRC B
+					return "RRC B";
+				case 0x09:									//	RRC C
+					return "RRC C";
+				case 0x0A:									//	RRC D
+					return "RRC D";
+				case 0x0B:									//  RRC E
+					return "RRC E";
+				case 0x0C:									//	RRC H
+					return "RRC H";
+				case 0x0D:									//	RRC L
+					return "RRC L";
+				case 0x0E:									//	RRC (HL) 
+					return "RRC (HL)";
+				case 0x0F:									//	RRC A
+					return "RRC A";
+				case 0x10:									//	RL B
+					return "RL B";
+				case 0x11:									//	RL C
+					return "RL C";
+				case 0x12:									//	RL D
+					return "RL D";
+				case 0x13:									//	RL E
+					return "RL E";
+				case 0x14:									//	RL H 
+					return "RL H";
+				case 0x15:									//	RL L
+					return "RL L";
+				case 0x16:									//	RL (HL)
+					return "RL (HL)";
+				case 0x17:									//	RL A
+					return "RL A";
+				case 0x18:									//  RR B
+					return "RR B";
+				case 0x19:									//  RR C
+					return "RR C";
+				case 0x1A:									//	RR D
+					return "RR D";
+				case 0x1B:									//	RR E
+					return "RR E";
+				case 0x1C:									// 	RR H
+					return "RR H";
+				case 0x1D:									//	RR L
+					return "RR L";
+				case 0x1E:									//	RR (HL)
+					return "RR (HL)";
+				case 0x1F:									//	RR A
+					return "RR A";
+				case 0x20:									//  SLA B
+					return "SLA B";
+				case 0x21:									//  SLA C
+					return "SLA C";
+				case 0x22:									//  SLA D
+					return "SLA D";
+				case 0x23:									//  SLA E
+					return "SLA E";
+				case 0x24:									//  SLA H
+					return "SLA H";
+				case 0x25:									//  SLA L
+					return "SLA L";
+				case 0x26:									//  SLA (HL)
+					return "SLA (HL)";
+				case 0x27:									//  SLA A
+					return "SLA A";
+				case 0x28:									//  SRA B
+					return "SRA B";
+				case 0x29:									//  SRA C
+					return "SRA C";
+				case 0x2A:									//  SRA D
+					return "SRA D";
+				case 0x2B:									//  SRA E
+					return "SRA E";
+				case 0x2C:									//  SRA L
+					return "SRA H";
+				case 0x2D:									//  SRA L
+					return "SRA L";
+				case 0x2E:									//  SRA (HL)
+					return "SRA (HL)";
+				case 0x2F:									//  SRA
+					return "SRA A";
+				case 0x30:									//  SLS B
+					return "SLS B";
+				case 0x31:									//  SLS C
+					return "SLS C";
+				case 0x32: 									//  SLS D
+					return "SLS D";
+				case 0x33:									//  SLS E
+					return "SLS E";
+				case 0x34:									//  SLS H
+					return "SLS H";
+				case 0x35:									//  SLS L
+					return "SLS L";
+				case 0x36:									//  SLS (HL)
+					return "SLS (HL)";
+				case 0x37:									//  SLS A
+					return "SLS A";
+				case 0x38:									//  SRL B
+					return "SRL B";
+				case 0x39:									//	SRL C
+					return "SRL C";
+				case 0x3A:									//  SRL D
+					return "SRL D";
+				case 0x3B:									//  SRL E
+					return "SRL E";
+				case 0x3C:									//  SRL H
+					return "SRL H";
+				case 0x3D:									//  SRL L
+					return "SRL L";
+				case 0x3E:									//  SRL (HL)
+					return "SRL (HL)";
+				case 0x3F:									//  SRL A
+					return "SRL A";
+				case 0x40:									//  BIT 0, B
+					return "BIT 0, B";
+				case 0x41:									//  BIT 0, C
+					return "BIT 0, C";
+				case 0x42: 									//  BIT 0, D
+					return "BIT 0, D";
+				case 0x43:									//  BIT 0, E
+					return "BIT 0, E";
+				case 0x44:									//  BIT 0, H
+					return "BIT 0, H";
+				case 0x45:									//  BIT 0, L
+					return "BIT 0, L";
+				case 0x46:									//  BIT 0, (HL)
+					return "BIT 0, (HL)";
+				case 0x47:									//  BIT 0, A
+					return "BIT 0, A";
+				case 0x48:									//  BIT 1, B
+					return "BIT 1, B";
+				case 0x49:									//  BIT 1, C
+					return "BIT 1, C";
+				case 0x4A:									//  BIT 1, D
+					return "BIT 1, D";
+				case 0x4B:									//  BIT 1, E
+					return "BIT 1, E";
+				case 0x4C:									//  BIT 1, H
+					return "BIT 1, H";
+				case 0x4D:									//  BIT 1, L
+					return "BIT 1, L";
+				case 0x4E:									//  BIT 1, (HL)
+					return "BIT 1, (HL)";
+				case 0x4F:									//  BIT 1, A
+					return "BIT 1, A";
+				case 0x50:									//  BIT 2, B
+					return "BIT 2, B";
+				case 0x51:									//  BIT 2, C
+					return "BIT 2, C";
+				case 0x52: 									//  BIT 2, D
+					return "BIT 2, D";
+				case 0x53:									//  BIT 2, E
+					return "BIT 2, E";
+				case 0x54:									//  BIT 2, H
+					return "BIT 2, H";
+				case 0x55:									//  BIT 2, L
+					return "BIT 2, L";
+				case 0x56:									//  BIT 2, (HL)
+					return "BIT 2, (HL)";
+				case 0x57:									//  BIT 2, A
+					return "BIT 2, A";
+				case 0x58:									//  BIT 3, B
+					return "BIT 3, B";
+				case 0x59:									//  BIT 3, C
+					return "BIT 3, C";
+				case 0x5A:									//  BIT 3, D
+					return "BIT 3, D";
+				case 0x5B:									//  BIT 3, E
+					return "BIT 3, E";
+				case 0x5C:									//  BIT 3, H
+					return "BIT 3, H";
+				case 0x5D:									//  BIT 3, L
+					return "BIT 3, L";
+				case 0x5E:									//  BIT 3, (HL)
+					return "BIT 3, (HL)";
+				case 0x5F:									//  BIT 3, A
+					return "BIT 3, A";
+				case 0x60:									//  BIT 4, B
+					return "BIT 4, B";
+				case 0x61:									//  BIT 4, C
+					return "BIT 4, C";
+				case 0x62: 									//  BIT 4, D
+					return "BIT 4, D";
+				case 0x63:									//  BIT 4, E
+					return "BIT 4, E";
+				case 0x64:									//  BIT 4, H
+					return "BIT 4, H";
+				case 0x65:									//  BIT 4, L
+					return "BIT 4, L";
+				case 0x66:									//  BIT 4, (HL)
+					return "BIT 4, (HL)";
+				case 0x67:									//  BIT 4, A
+					return "BIT 4, A";
+				case 0x68:									//  BIT 5, B
+					return "BIT 5, B";
+				case 0x69:									//  BIT 5, C
+					return "BIT 5, C";
+				case 0x6A:									//  BIT 5, D
+					return "BIT 5, D";
+				case 0x6B:									//  BIT 5, E
+					return "BIT 5, E";
+				case 0x6C:									//  BIT 5, H
+					return "BIT 5, H";
+				case 0x6D:									//  BIT 5, L
+					return "BIT 5, L";
+				case 0x6E:									//  BIT 5, (HL)
+					return "BIT 5, (HL)";
+				case 0x6F:									//  BIT 5, A
+					return "BIT 5, A";
+				case 0x70:									//  BIT 6, B
+					return "BIT 6, B";
+				case 0x71:									//  BIT 6, C
+					return "BIT 6, C";
+				case 0x72: 									//  BIT 6, D
+					return "BIT 6, D";
+				case 0x73:									//  BIT 6, E
+					return "BIT 6, E";
+				case 0x74:									//  BIT 6, H
+					return "BIT 6, H";
+				case 0x75:									//  BIT 6, L
+					return "BIT 6, L";
+				case 0x76:									//  BIT 6, (HL)
+					return "BIT 6 (HL)";
+				case 0x77:									//  BIT 6, A
+					return "BIT 6, A";
+				case 0x78:									//  BIT 7, B
+					return "BIT 7, B";
+				case 0x79:									//  BIT 7, C
+					return "BIT 7, C";
+				case 0x7A:									//  BIT 7, D
+					return "BIT 7, D";
+				case 0x7B:									//  BIT 7, E
+					return "BIT 7, E";
+				case 0x7C:									//  BIT 7, H
+					return "BIT 7, H";
+				case 0x7D:									//  BIT 7, L
+					return "BIT 7, L";
+				case 0x7E:									//  BIT 7, (HL)
+					return "BIT 7, (HL)";
+				case 0x7F:									//  BIT 7, A
+					return "BIT 7, A";
+				case 0x80:									//  RES 0, B
+					return "RES 0, B";
+				case 0x81:									//  RES 0, C
+					return "RES 0, C";
+				case 0x82:									//  RES 0, D
+					return "RES 0, D";
+				case 0x83:									//  RES 0, E
+					return "RES 0, E";
+				case 0x84:									//  RES 0, H
+					return "RES 0, H";
+				case 0x85:									//  RES0 , L
+					return "RES 0, L";
+				case 0x86:									//  RES 0, (HL)
+					return "RES 0, (HL)";
+				case 0x87:									//  RES 0, A
+					return "RES 0, A";
+				case 0x88:									//  RES 1, B
+					return "RES 1, B";
+				case 0x89:									//  RES 1, C
+					return "RES 1, C";
+				case 0x8A:									//  RES 1, D
+					return "RES 1, D";
+				case 0x8B:									//  RES 1, E
+					return "RES 1, E";
+				case 0x8C:									//  RES 1, H
+					return "RES 1, H";
+				case 0x8D:									//  RES 1, L
+					return "RES 1, L";
+				case 0x8E:									//  RES 1, (HL)
+					return "RES 1, (HL)";
+				case 0x8F:									//  RES 1, A
+					return "RES 1, A";
+				case 0x90:									//  RES 2, B
+					return "RES 2, B";
+				case 0x91:									//  RES 2, C
+					return "RES 2, C";
+				case 0x92: 									//  RES 2, D
+					return "RES 2, D";
+				case 0x93:									//  RES 2, E
+					return "RES 2, E";
+				case 0x94:									//  RES 2, H
+					return "RES 2, H";
+				case 0x95:									//  RES 2, L
+					return "RES 2, L";
+				case 0x96:									//  RES 2, (HL)
+					return "RES 2, (HL)";
+				case 0x97:									//  RES 2, A
+					return "RES 2, A";
+				case 0x98:									//  RES 3, B
+					return "RES 3, B";
+				case 0x99:									//  RES 3, C
+					return "RES 3, C";
+				case 0x9A:									//  RES 3, D
+					return "RES 3, D";
+				case 0x9B:									//  RES 3, E
+					return "RES 3, E";
+				case 0x9C:									//  RES 3, H
+					return "RES 3, H";
+				case 0x9D:									//  RES 3, L
+					return "RES 3, L";
+				case 0x9E:									//  RES 3, (HL)
+					return "RES 3, (HL)";
+				case 0x9F:									//  RES 3, A
+					return "RES 3, A";
+				case 0xA0:									//  RES 4, B
+					return "RES 4, B";
+				case 0xA1:									//  RES 4, C
+					return "RES 4, C";
+				case 0xA2: 									//  RES 4, D
+					return "RES 4, D";
+				case 0xA3:									//  RES 4, E
+					return "RES 4, E";
+				case 0xA4:									//  RES 4, H
+					return "RES 4, H";
+				case 0xA5:									//  RES 4, L
+					return "RES 4, L";
+				case 0xA6:									//  RES 4, (HL)
+					return "RES 4, (HL)";
+				case 0xA7:									//  RES 4, A
+					return "RES 4, A";
+				case 0xA8:									//  RES 5, B
+					return "RES 5, B";
+				case 0xA9:									//  RES 5, C
+					return "RES 5, C";
+				case 0xAA:									//  RES 5, D
+					return "RES 5, D";
+				case 0xAB:									//  RES 5, E
+					return "RES 5, E";
+				case 0xAC:									//  RES 5, H
+					return "RES 5, H";
+				case 0xAD:									//  RES 5, L
+					return "RES 5, L";
+				case 0xAE:									//  RES 5, (HL)
+					return "RES 5, (HL)";
+				case 0xAF:									//  RES 5, A
+					return "RES 5, A";
+				case 0xB0:									//  RES 6, B
+					return "RES 6, B";
+				case 0xB1:									//  RES 6, C
+					return "RES 6, C";
+				case 0xB2: 									//  RES 6, D
+					return "RES 6, D";
+				case 0xB3:									//  RES 6, E
+					return "RES 6, E";
+				case 0xB4:									//  RES 6, H
+					return "RES 6, H";
+				case 0xB5:									//  RES 6, L
+					return "RES 6, L";
+				case 0xB6:									//  RES 6, (HL)
+					return "RES 6, (HL)";
+				case 0xB7:									//  RES 6, A
+					return "RES 6, A";
+				case 0xB8:									//  RES 7, B
+					return "RES 7, B";
+				case 0xB9:									//  RES 7, C
+					return "RES 7, C";
+				case 0xBA:									//  RES 7, D
+					return "RES 7, D";
+				case 0xBB:									//  RES 7, E
+					return "RES 7, E";
+				case 0xBC:									//  RES 7, H
+					return "RES 7, H";
+				case 0xBD:									//  RES 7, L
+					return "RES 7, L";
+				case 0xBE:									//  RES 7, (HL)
+					return "RES 7, (HL)";
+				case 0xBF:									//  RES 7, A
+					return "RES 7, A";
+				case 0xC0:									//  SET 0, B
+					return "SET 0, B";
+				case 0xC1:									//  SET 0, C
+					return "SET 0, C";
+				case 0xC2: 									//  SET 0, D
+					return "SET 0, D";
+				case 0xC3:									//  SET 0, E
+					return "SET 0, E";
+				case 0xC4:									//  SET 0, H
+					return "SET 0, H";
+				case 0xC5:									//  SET 0, L
+					return "SET 0, L";
+				case 0xC6:									//  SET 0, (HL)
+					return "SET 0, (HL)";
+				case 0xC7:									//  SET 0, A
+					return "SET 0, A";
+				case 0xC8:									//  SET 1, B
+					return "SET 1, B";
+				case 0xC9:									//  SET 1, C
+					return "SET 1, C";
+				case 0xCA:									//  SET 1, D
+					return "SET 1, D";
+				case 0xCB:									//  SET 1, E
+					return "SET 1, E";
+				case 0xCC:									//  SET 1, H
+					return "SET 1, H";
+				case 0xCD:									//  SET 1, L
+					return "SET 1, L";
+				case 0xCE:									//  SET 1, (HL)
+					return "SET 1, (HL)";
+				case 0xCF:									//  SET 1, A
+					return "SET 1, A";
+				case 0xD0:									//  SET 2, B
+					return "SET 2, B";
+				case 0xD1:									//  SET 2, C
+					return "SET 2, C";
+				case 0xD2: 									//  SET 2, D
+					return "SET 2, D";
+				case 0xD3:									//  SET 2, E
+					return "SET 2, E";
+				case 0xD4:									//  SET 2, H
+					return "SET 2, H";
+				case 0xD5:									//  SET 2, L
+					return "SET 2, L";
+				case 0xD6:									//  SET 2, (HL) 
+					return "SET 2, (HL)";
+				case 0xD7:									//  SET 2, A
+					return "SET 2, A";
+				case 0xD8:									//  SET 3, B
+					return "SET 3, B";
+				case 0xD9:									//  SET 3, C
+					return "SET 3, C";
+				case 0xDA:									//  SET 3, D
+					return "SET 3, D";
+				case 0xDB:									//  SET 3, E
+					return "SET 3, E";
+				case 0xDC:									//  SET 3, H
+					return "SET 3, H";
+				case 0xDD:									// 	SET 3, L
+					return "SET 3, L";
+				case 0xDE:									//  SET 3, (HL)
+					return "SET 3, (HL)";
+				case 0xDF:									//  SET 3, A
+					return "SET 3, A";
+				case 0xE0:									//  SET 4, B
+					return "SET 4, B";
+				case 0xE1:									//  SET 4, C
+					return "SET 4, C";
+				case 0xE2: 									//  SET 4, D
+					return "SET 4, D";
+				case 0xE3:									//  SET 4, E
+					return "SET 4, E";
+				case 0xE4:									//  SET 4, H
+					return "SET 4, H";
+				case 0xE5:									//  SET 4, L
+					return "SET 4, L";
+				case 0xE6:									//  SET 4, (HL)
+					return "SET 4, (HL)";
+				case 0xE7:									//  SET 4, A
+					return "SET 4, A";
+				case 0xE8:									//  SET 5, B
+					return "SET 5, B";
+				case 0xE9:									//  SET 5, C
+					return "SET 5, C";
+				case 0xEA:									//  SET 5, D
+					return "SET 5, D";
+				case 0xEB:									//  SET 5, E
+					return "SET 5, E";
+				case 0xEC:									//  SET 5, H
+					return "SET 5, H";
+				case 0xED:									//  SET 5, L
+					return "SET 5, L";
+				case 0xEE:									//  SET 5, (HL)
+					return "SET 5, (HL)";
+				case 0xEF:									//  SET 5, A
+					return "SET 5, A";
+				case 0xF0:									//  SET 6, B
+					return "SET 6, B";
+				case 0xF1:									//  SET 6, C
+					return "SET 6, C";
+				case 0xF2: 									//  SET 6, D
+					return "SET 6, D";
+				case 0xF3:									//  SET 6, E
+					return "SET 6, E";
+				case 0xF4:									//  SET 6, H
+					return "SET 6, H";
+				case 0xF5:									//  SET 6, L
+					return "SET 6, L";
+				case 0xF6:									//  SET 6, (HL)
+					return "SET 6, (HL)";
+				case 0xF7:									//  SET 6, A
+					return "SET 6, A";
+				case 0xF8:									//  SET 7, B
+					return "SET 7, B";
+				case 0xF9:									//  SET 7, C
+					return "SET 7, C";
+				case 0xFA:									//  SET 7, D
+					return "SET 7, D";
+				case 0xFB:									// 	SET 7, E
+					return "SET 7, E";
+				case 0xFC:									//  SET 7, H
+					return "SER 7, H";
+				case 0xFD:									//  SET 7, L
+					return "SET 7, L";
+				case 0xFE:									//  SET 7, (HL)
+					return "SET 7, (HL)";
+				case 0xFF:									//  SET 7, A
+					return "SET 7, A";
+				default:
+					printf("Error: formato incorrecto");
+					return "ERROR";
+			}
 			return "Incompleto";
 		case 0xCC:									//  CALL Z, e
 			// funcion getEti()
