@@ -8,11 +8,11 @@ void getByte(char [], char []);
 void complete(const char *, char [], char []);
 
 int i;  //contador
-char buffer[20];
+char buffer[20];  //almacenamiento temporal para retorno en getInstruction
 
 int main(int argvc, char **argv) {
     FILE *file;
-    char line[45];
+    char line[45];  //linea del archivo .hex
     char byte[3];
     int dbytes_in_line;  //cantidad de bytes que representan codigos de operacion en una linea del archivo
     int opcode;  //codigo de operacion, guardado en base 10
@@ -65,7 +65,8 @@ char * getInstruction(int opcode, char line[]) {
 	char argument2[20];  //byte menos significativo
 	
 	/*AGREGAR H AL FINAL DE HEXADECIMAL*/
-	/*SI LA INSTRUCCION SE CORTA PORQUE SE ACABO LA LINEA FALLA, se puede poner getNewLine()*/
+	/*SI LA INSTRUCCION SE CORTA PORQUE SE ACABO LA LINEA, FALLA. Se puede poner getNewLine()*/
+	/*PONER INSTRUCCIONES DE DD Y FD EN UN SOLO SWITCH*/
 	switch(opcode){
 		
 		case 0x00:									//	NOP
@@ -365,279 +366,369 @@ char * getInstruction(int opcode, char line[]) {
 		case 0x76:									//  HALT
 			return "HALT";
 		case 0x77:									//  LD (HL), A
-			return;
+			return "LD (HL), A";
 		case 0x78:									//  LD A, B
-			return;
+			return "LD A, B";
 		case 0x79:									//  LD A, C
-			return;
+			return "LD A, C";
 		case 0x7A:									//  LD A, D
-			return;
+			return "LD A, D";
 		case 0x7B:									//  LD A, E
-			return;
+			return "LD A, E";
 		case 0x7C:									//  LD A, H
-			return;
+			return "LD A, H";
 		case 0x7D:									//  LD A, L
-			return;
+			return "LD A, L";
 		case 0x7E:									//  LD A, (HL)
-			return;
+			return "LD A, (HL)";
 		case 0x7F:									//  LD A, A
-			return;
+			return "LD A, A";
 		case 0x80:									//  ADD A, B
-			return;
+			return "ADD A, B";
 		case 0x81:									//  ADD A, C
-			return;
+			return "ADD A, C";
 		case 0x82:									//  ADD A, D
-			return;
+			return "ADD A, D";
 		case 0x83:									//  ADD A, E
-			return;
+			return "ADD A, E";
 		case 0x84:									//  ADD A, H
-			return;
+			return "ADD A, H";
 		case 0x85:									//  ADD A, L
-			return;
+			return "ADD A, L";
 		case 0x86:									//  ADD A, (HL)
-			return;
+			return "ADD A, (HL)";
 		case 0x87:									//  ADD A, A
-			return;
+			return "ADD A, A";
 		case 0x88:									//  ADC A, B
-			return;
+			return "ADC A, B";
 		case 0x89:									//  ADC A, C
-			return;
+			return "ADC A, C";
 		case 0x8A:									//  ADC A, D
-			return;
+			return "ADC A, D";
 		case 0x8B:									//  ADC A, E
-			return;
+			return "ADC A, E";
 		case 0x8C:									//  ADC A, H
-			return;
+			return "ADC A, H";
 		case 0x8D:									//  ADC A, L
-			return;
+			return "ADC A, L";
 		case 0x8E:									//  ADC A, (HL)
-			return;
+			return "ADC A, (HL)";
 		case 0x8F:									//  ADC A, A
-			return;
+			return "ADC A, A";
 		case 0x90:									//  SUB A, B
-			return;
+			return "SUB A, B";
 		case 0x91:									//  SUB A, C
-			return;
+			return "SUB A, C";
 		case 0x92: 									//  SUB A, D
-			return;
+			return "SUB A, D";
 		case 0x93:									//  SUB A, E
-			return;
+			return "SUB A, E";
 		case 0x94:									//  SUB A, H
-			return;
+			return "SUB A, H";
 		case 0x95:									//  SUB A, L
-			return;
+			return "SUB A, L";
 		case 0x96:									//  SUB A, (HL)
-			return;
+			return "SUB A, (HL)";
 		case 0x97:									//  SUB A, A
-			return;
+			return "SUB A, A";
 		case 0x98:									//  SBC A, B
-			return;
+			return "SBC A, B";
 		case 0x99:									//  SBC A, C
-			return;
+			return "SBC A, C";
 		case 0x9A:									//  SBC A, D
-			return;
+			return "SBC A, D";
 		case 0x9B:									//  SBC A, E
-			return;
+			return "SBC A, E";
 		case 0x9C:									//  SBC A, H
-			return;
+			return "SBC A, H";
 		case 0x9D:									//  SBC A, L
-			return;
+			return "SBC A, L";
 		case 0x9E:									//  SBC A, (HL)
-			return;
+			return "SBC A, (HL)";
 		case 0x9F:									//  SBC A, A
-			return;
+			return "SBC A, A";
 		case 0xA0:									//  AND B
-			return;
+			return "AND B";
 		case 0xA1:									//  AND C
-			return;
+			return "AND C";
 		case 0xA2: 									//  AND D
-			return;
+			return "AND D";
 		case 0xA3:									//  AND E
-			return;
+			return "AND E";
 		case 0xA4:									//  AND H
-			return;
+			return "AND H";
 		case 0xA5:									//  AND L
-			return;
+			return "AND L";
 		case 0xA6:									//  AND (HL)
-			return;
+			return "AND (HL)";
 		case 0xA7:									//  AND A
-			return;
+			return "AND A";
 		case 0xA8:									//  XOR B
-			return;
+			return "XOR B";
 		case 0xA9:									//  XOR C
-			return;
+			return "XOR C";
 		case 0xAA:									//  XOR D
-			return;
+			return "XOR D";
 		case 0xAB:									//  XOR E
-			return;
+			return "XOR E";
 		case 0xAC:									//  XOR H
-			return;
+			return "XOR H";
 		case 0xAD:									//  XOR L
-			return;
+			return "XOR L";
 		case 0xAE:									//  XOR (HL)
-			return;
+			return "XOR (HL)";
 		case 0xAF:									//  XOR A
-			return;
+			return "XOR A";
 		case 0xB0:									//  OR B
-			return;
+			return "OR B";
 		case 0xB1:									//  OR C
-			return;
+			return "OR C";
 		case 0xB2: 									//  OR D
-			return;
+			return "OR D";
 		case 0xB3:									//  OR E
-			return;
+			return "OR E";
 		case 0xB4:									//  OR H
-			return;
+			return "OR H";
 		case 0xB5:									//  OR L
-			return;
+			return "OR L";
 		case 0xB6:									//  OR (HL)
-			return;
+			return "OR (HL)";
 		case 0xB7:									//  OR A
-			return;
+			return "OR A";
 		case 0xB8:									//  CP B
-			return;
+			return "CP B";
 		case 0xB9:									//  CP C
-			return;
+			return "CP C";
 		case 0xBA:									//  CP D
-			return;
+			return "CP D";
 		case 0xBB:									//  CP E
-			return;
+			return "CP E";
 		case 0xBC:									//  CP H
-			return;
+			return "CP H";
 		case 0xBD:									//  CP L
-			return;
+			return "CP L";
 		case 0xBE:									//  CP (HL)
-			return;
+			return "CP (HL)";
 		case 0xBF:									//  CP A
-			return;
+			return "CP A";
 		case 0xC0:									//  RET NZ
-			return;
+			return "RET NZ";
 		case 0xC1:									//  POP BC
-			return;
+			return "POP BC";
 		case 0xC2: 									//  JP NZ, nn
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("JP NZ, ", argument2, argument1);
+			return buffer;
 		case 0xC3:									//  JP nn
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("JP ", argument2, argument1);
+			return buffer;
 		case 0xC4:									//  CALL NZ, nn
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("CALL NZ, ", argument2, argument1);
+			return buffer;
 		case 0xC5:									//  PUSH BC
-			return;
+			return "PUSH BC";
 		case 0xC6:									//  ADD A, n
-			return;
+			getByte(argument1, line);
+			strcpy(argument2, "");
+			complete("ADD A, ", argument1, argument2);
+			return buffer;
 		case 0xC7:									//  RST 00H
-			return;
+			return "RST 00H";
 		case 0xC8:									//  RET Z
-			return;
+			return "RET Z";
 		case 0xC9:									//  RET
-			return;
+			return "RET";
 		case 0xCA:									//  JP Z, nn
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("JP Z, ", argument2, argument1);
+			return buffer;
 		case 0xCB:									//  ** CB **
-			return;
+			// switch para CB
+			return "Incompleto";
 		case 0xCC:									//  CALL Z, nn
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("CALL Z, ", argument2, argument1);
+			return buffer;
 		case 0xCD:									//  CALL nn
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("CALL ", argument2, argument1);
+			return buffer;
 		case 0xCE:									//  ADC A, n
-			return;
+			getByte(argument1, line);
+			strcpy(argument2, "");
+			complete("ADC A, ", argument1, argument2);
+			return buffer;
 		case 0xCF:									//  RST 08H
-			return;
+			return "RST 08H";
 		case 0xD0:									//  RET NC
-			return;
+			return "RET NC";
 		case 0xD1:									//  POP DE
-			return;
+			return "POP DE";
 		case 0xD2: 									//  JP NC, nn
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("JP NC, ", argument2, argument1);
+			return buffer;
 		case 0xD3:									//  OUT (n), A
-			return;
+			getByte(argument1, line);
+			strcpy(argument2, "");
+			complete("OUT (", argument1, argument2);
+			strcat(buffer, "), A");
+			return buffer;
 		case 0xD4:									//  CALL NC, nn
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("CALL NC, ", argument2, argument1);
+			return buffer;
 		case 0xD5:									//  PUSH DE
-			return;
+			return "PUSH DE";
 		case 0xD6:									//  SUB A, n
-			return;
+			getByte(argument1, line);
+			strcpy(argument2, "");
+			complete("SUB A, ", argument1, argument2);
+			return buffer;
 		case 0xD7:									//  RST 10H
-			return;
+			return "RST 10H";
 		case 0xD8:									//  RET C
-			return;
+			return "RET C";
 		case 0xD9:									//  EXX
-			return;
+			return "EXX";
 		case 0xDA:									//  JP C, nn
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("JP C, ", argument2, argument1);
+			return buffer;
 		case 0xDB:									//  IN A, (n)
-			return;
+			getByte(argument1, line);
+			strcpy(argument2, "");
+			complete("IN A, (", argument1, argument2);
+			strcat(buffer, ")");
+			return buffer;
 		case 0xDC:									//  CALL C, nn
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("CALL C, ", argument2, argument1);
+			return buffer;
 		case 0xDD:									//  ** DD **
-			return;
+			// switch para DD
+			return "Incompleto";
 		case 0xDE:									//  SBC A, n
-			return;
+			getByte(argument1, line);
+			strcpy(argument2, "");
+			complete("SBC A, ", argument1, argument2);
+			return buffer;
 		case 0xDF:									//  RST 18H
-			return;
+			return "RST 18H";
 		case 0xE0:									//  RET PO
-			return;
+			return "RET PO";
 		case 0xE1:									//  POP HL
-			return;
+			return "POP HL";
 		case 0xE2: 									//  JP PO, nn
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("JP PO, ", argument2, argument1);
+			return buffer;
 		case 0xE3:									//  EX (SP), HL
-			return;
+			return "EX (SP), HL";
 		case 0xE4:									//  CALL PO, nn
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("CALL PO, ", argument2, argument1);
+			return buffer;
 		case 0xE5:									//  PUSH HL
-			return;
+			return "PUSH HL";
 		case 0xE6:									//  AND n
-			return;
+			getByte(argument1, line);
+			strcpy(argument2, "");
+			complete("AND ", argument1, argument2);
+			return buffer;
 		case 0xE7:									//  RST 20H
-			return;
+			return "RST 20H";
 		case 0xE8:									//  RET PE
-			return;
+			return "RET PE";
 		case 0xE9:									//  JP (HL)
-			return;
-		case 0xEA:									//  PE, nn
-			return;
+			return "JP (HL)";
+		case 0xEA:									//  JP PE, nn
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("JP PE, ", argument2, argument1);
+			return buffer;
 		case 0xEB:									//  EX DE, HL
-			return;
+			return "EX DE, HL";
 		case 0xEC:									//  CALL PE, nn
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("CALL PE, ", argument2, argument1);
+			return buffer;
 		case 0xED:									//  ** ED **
-			return;
+			// switch para ED
+			return "Incompleto";
 		case 0xEE:									//  XOR n
-			return;
+			getByte(argument1, line);
+			strcpy(argument2, "");
+			complete("XOR ", argument1, argument2);
+			return buffer;
 		case 0xEF:									//  RST 28H
-			return;
+			return "RST 28H";
 		case 0xF0:									//  RET P
-			return;
+			return "RET P";
 		case 0xF1:									//  POP AF
-			return;
+			return "POP AF";
 		case 0xF2: 									//  JP P, nn
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("JP P, ", argument2, argument1);
+			return buffer;
 		case 0xF3:									//  DI
-			return;
+			return "DI";
 		case 0xF4:									//  CALL P, nn
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("CALL P, ", argument2, argument1);
+			return buffer;
 		case 0xF5:									//  PUSH AF
-			return;
+			return "PUSH AF";
 		case 0xF6:									//  OR n
-			return;
+			getByte(argument1, line);
+			strcpy(argument2, "");
+			complete("OR ", argument1, argument2);
+			return buffer;
 		case 0xF7:									//  RST 30H
-			return;
+			return "RST 30H";
 		case 0xF8:									//  RET M
-			return;
+			return "RET M";
 		case 0xF9:									//  LD SP, HL
-			return;
+			return "LD SP, HL";
 		case 0xFA:									//  JP M, nn
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("JP M, ", argument2, argument1);
+			return buffer;
 		case 0xFB:									//  EI
-			return;
+			return "EI";
 		case 0xFC:									//  CALL M, nn
-			return;
+			getByte(argument2, line);
+			getByte(argument1, line);
+			complete("CALL M, ", argument2, argument1);
+			return buffer;
 		case 0xFD:									//  ** FD **
-			return;
+			// switch para FD
+			return "Incompleto";
 		case 0xFE:									//  CP n
-			return;
+			getByte(argument1, line);
+			strcpy(argument2, "");
+			complete("CP ", argument1, argument2);
+			return buffer;
 		case 0xFF:									//  RST 38H
-			return;
+			return "RST 38H";
 		default:
 			printf("Error: formato incorrecto");
 			return "ERROR";
