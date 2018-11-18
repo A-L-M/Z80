@@ -544,9 +544,6 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 			getByte(byte, line);
 			opcode = (int) strtol(byte, NULL, 16);
 			// switch para CB
-						getByte(byte, line);
-			opcode = (int) strtol(byte, NULL, 16);
-			// switch para CB
 			switch(opcode){
 				
 				case 0x00:									//	RLC B
