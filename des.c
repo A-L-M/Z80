@@ -515,21 +515,15 @@ char * getInstruction(int opcode, char line[]) {
 			return "RET NZ";
 		case 0xC1:									//  POP BC
 			return "POP BC";
-		case 0xC2: 									//  JP NZ, nn
-			getByte(argument2, line);
-			getByte(argument1, line);
-			complete("JP NZ, ", argument2, argument1);
-			return buffer;
-		case 0xC3:									//  JP nn
-			getByte(argument2, line);
-			getByte(argument1, line);
-			complete("JP ", argument2, argument1);
-			return buffer;
-		case 0xC4:									//  CALL NZ, nn
-			getByte(argument2, line);
-			getByte(argument1, line);
-			complete("CALL NZ, ", argument2, argument1);
-			return buffer;
+		case 0xC2: 									//  JP NZ, e
+			// funcion getEti()
+			return "Incompleto";
+		case 0xC3:									//  JP e
+			// funcion getEti()
+			return "Incompleto";
+		case 0xC4:									//  CALL NZ, e
+			//funcion getEti()
+			return "Incompleto";
 		case 0xC5:									//  PUSH BC
 			return "PUSH BC";
 		case 0xC6:									//  ADD A, n
@@ -543,24 +537,18 @@ char * getInstruction(int opcode, char line[]) {
 			return "RET Z";
 		case 0xC9:									//  RET
 			return "RET";
-		case 0xCA:									//  JP Z, nn
-			getByte(argument2, line);
-			getByte(argument1, line);
-			complete("JP Z, ", argument2, argument1);
-			return buffer;
+		case 0xCA:									//  JP Z, e
+			// funcion getEti()
+			return "Incompleto";
 		case 0xCB:									//  ** CB **
 			// switch para CB
 			return "Incompleto";
-		case 0xCC:									//  CALL Z, nn
-			getByte(argument2, line);
-			getByte(argument1, line);
-			complete("CALL Z, ", argument2, argument1);
-			return buffer;
-		case 0xCD:									//  CALL nn
-			getByte(argument2, line);
-			getByte(argument1, line);
-			complete("CALL ", argument2, argument1);
-			return buffer;
+		case 0xCC:									//  CALL Z, e
+			// funcion getEti()
+			return "Incompleto";
+		case 0xCD:									//  CALL e
+			// funcion getEti()
+			return "Incompleto";
 		case 0xCE:									//  ADC A, n
 			getByte(argument1, line);
 			strcpy(argument2, "");
@@ -572,22 +560,18 @@ char * getInstruction(int opcode, char line[]) {
 			return "RET NC";
 		case 0xD1:									//  POP DE
 			return "POP DE";
-		case 0xD2: 									//  JP NC, nn
-			getByte(argument2, line);
-			getByte(argument1, line);
-			complete("JP NC, ", argument2, argument1);
-			return buffer;
+		case 0xD2: 									//  JP NC, e
+			// funcion getEti()
+			return "Incompleto";
 		case 0xD3:									//  OUT (n), A
 			getByte(argument1, line);
 			strcpy(argument2, "");
 			complete("OUT (", argument1, argument2);
 			strcat(buffer, "), A");
 			return buffer;
-		case 0xD4:									//  CALL NC, nn
-			getByte(argument2, line);
-			getByte(argument1, line);
-			complete("CALL NC, ", argument2, argument1);
-			return buffer;
+		case 0xD4:									//  CALL NC, e
+			// funcion getEti()
+			return "Incompleto";
 		case 0xD5:									//  PUSH DE
 			return "PUSH DE";
 		case 0xD6:									//  SUB A, n
@@ -601,22 +585,18 @@ char * getInstruction(int opcode, char line[]) {
 			return "RET C";
 		case 0xD9:									//  EXX
 			return "EXX";
-		case 0xDA:									//  JP C, nn
-			getByte(argument2, line);
-			getByte(argument1, line);
-			complete("JP C, ", argument2, argument1);
-			return buffer;
+		case 0xDA:									//  JP C, e
+			// funcion getEti()
+			return "Incompleto";
 		case 0xDB:									//  IN A, (n)
 			getByte(argument1, line);
 			strcpy(argument2, "");
 			complete("IN A, (", argument1, argument2);
 			strcat(buffer, ")");
 			return buffer;
-		case 0xDC:									//  CALL C, nn
-			getByte(argument2, line);
-			getByte(argument1, line);
-			complete("CALL C, ", argument2, argument1);
-			return buffer;
+		case 0xDC:									//  CALL C, e
+			// funcion getEti()
+			return "Incompleto";
 		case 0xDD:									//  ** DD **
 			// switch para DD
 			return "Incompleto";
@@ -631,18 +611,14 @@ char * getInstruction(int opcode, char line[]) {
 			return "RET PO";
 		case 0xE1:									//  POP HL
 			return "POP HL";
-		case 0xE2: 									//  JP PO, nn
-			getByte(argument2, line);
-			getByte(argument1, line);
-			complete("JP PO, ", argument2, argument1);
-			return buffer;
+		case 0xE2: 									//  JP PO, e
+			// funcion getEti()
+			return "Incompleto";
 		case 0xE3:									//  EX (SP), HL
 			return "EX (SP), HL";
-		case 0xE4:									//  CALL PO, nn
-			getByte(argument2, line);
-			getByte(argument1, line);
-			complete("CALL PO, ", argument2, argument1);
-			return buffer;
+		case 0xE4:									//  CALL PO, e
+			// funcion getEti()
+			return "Incompleto";
 		case 0xE5:									//  PUSH HL
 			return "PUSH HL";
 		case 0xE6:									//  AND n
@@ -656,18 +632,14 @@ char * getInstruction(int opcode, char line[]) {
 			return "RET PE";
 		case 0xE9:									//  JP (HL)
 			return "JP (HL)";
-		case 0xEA:									//  JP PE, nn
-			getByte(argument2, line);
-			getByte(argument1, line);
-			complete("JP PE, ", argument2, argument1);
-			return buffer;
+		case 0xEA:									//  JP PE, e
+			// funcion getEti()
+			return "Incompleto";
 		case 0xEB:									//  EX DE, HL
 			return "EX DE, HL";
-		case 0xEC:									//  CALL PE, nn
-			getByte(argument2, line);
-			getByte(argument1, line);
-			complete("CALL PE, ", argument2, argument1);
-			return buffer;
+		case 0xEC:									//  CALL PE, e
+			// funcion getEti()
+			return "Incompleto";
 		case 0xED:									//  ** ED **
 			// switch para ED
 			return "Incompleto";
@@ -682,18 +654,14 @@ char * getInstruction(int opcode, char line[]) {
 			return "RET P";
 		case 0xF1:									//  POP AF
 			return "POP AF";
-		case 0xF2: 									//  JP P, nn
-			getByte(argument2, line);
-			getByte(argument1, line);
-			complete("JP P, ", argument2, argument1);
-			return buffer;
+		case 0xF2: 									//  JP P, e
+			// funcion getEti()
+			return "Incompleto";
 		case 0xF3:									//  DI
 			return "DI";
-		case 0xF4:									//  CALL P, nn
-			getByte(argument2, line);
-			getByte(argument1, line);
-			complete("CALL P, ", argument2, argument1);
-			return buffer;
+		case 0xF4:									//  CALL P, e
+			// funcion getEti()
+			return "Incompleto";
 		case 0xF5:									//  PUSH AF
 			return "PUSH AF";
 		case 0xF6:									//  OR n
@@ -707,18 +675,14 @@ char * getInstruction(int opcode, char line[]) {
 			return "RET M";
 		case 0xF9:									//  LD SP, HL
 			return "LD SP, HL";
-		case 0xFA:									//  JP M, nn
-			getByte(argument2, line);
-			getByte(argument1, line);
-			complete("JP M, ", argument2, argument1);
-			return buffer;
+		case 0xFA:									//  JP M, e
+			// funcion getEti()
+			return "Incompleto";
 		case 0xFB:									//  EI
 			return "EI";
-		case 0xFC:									//  CALL M, nn
-			getByte(argument2, line);
-			getByte(argument1, line);
-			complete("CALL M, ", argument2, argument1);
-			return buffer;
+		case 0xFC:									//  CALL M, e
+			// funcion getEti()
+			return "Incompleto";
 		case 0xFD:									//  ** FD **
 			// switch para FD
 			return "Incompleto";
