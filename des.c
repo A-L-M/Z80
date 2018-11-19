@@ -8,15 +8,17 @@ void getByte(char [], char []);
 void complete(const char *, char [], char []);
 void attach(const char *, char [], char []);
 char *newSwitch(int, char [], int);
+int checkEndLine(int, char []);
+void getNewLine(char [], int);
 
 int i = 0;  //contador
+int dbytes_in_line;  //cantidad de bytes que representan codigos de operacion en una linea del archivo
 char buffer[20];  //almacenamiento temporal para retorno en getInstruction
+FILE *file;
 
 int main(int argvc, char **argv) {
-    FILE *file;
 	char line[45];  //linea del archivo .hex
 	char byte[3];
-    int dbytes_in_line;  //cantidad de bytes que representan codigos de operacion en una linea del archivo
     int opcode;  //codigo de operacion, guardado en base 10
     char *mnemonico;
 
@@ -51,6 +53,35 @@ void getByte(char argument[], char line[]){
 	argument[0] = line[i];
 	argument[1] = line[i+1];
 	i += 2;
+}
+
+int checkEndLine(int need_bytes, char line[]){
+	if(need_bytes == 1){
+		if(line[i+4] == '\n'){
+			return 1;
+		}
+		return 0;
+	}
+	else if(need_bytes == 2){
+		if(line[i+2] == '\n'){
+			return 2;
+		}
+		else if(line[i+4] == '\n'){
+			return 1;
+		}
+		return 0;
+	}
+}
+
+void getNewLine(char line[], int size){
+	char byte[3];
+	fgets(line, size, file);
+	byte[0] = line[1];
+    byte[1] = line[2];
+	dbytes_in_line = (int) strtol(byte, NULL, 16);  //Toma la cadena almacenada en byte[] y la convierte a int, leyendo en base 16
+    dbytes_in_line = (dbytes_in_line * 2) + 9;  //dos digitos por byte, +9 digitos que se ignoran al inicio
+	i = 9;
+	printf("\n");
 }
 
 void complete(const char *arg1, char arg2[], char arg3[]){  //junta primera parte de mnemonico con n o nn, inserta H al final
@@ -1179,7 +1210,9 @@ char *newSwitch(int opcode, char line[], int nextbyte){
 char * getInstruction(int opcode, char line[], char byte[]) {
 	char argument1[20];  //byte mas significativo
 	char argument2[20];  //byte menos significativo
-	int nextbyte;
+	char temp_line[45];
+	int nextbyte, check_byte;
+	
 
 	/*AGREGAR H AL FINAL DE HEXADECIMAL*/
 	/*SI LA INSTRUCCION SE CORTA PORQUE SE ACABO LA LINEA, FALLA. Se puede poner getNewLine()*/
@@ -1189,6 +1222,24 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0x00:									//	NOP
 			return "NOP";
 		case 0x01:									//	LD BC, nn
+			check_byte = checkEndLine(2, line);  //se necesitan dos bytes para completar la instruccion
+			if(check_byte == 1){  // se necesita un byte que esta en la siguiente linea
+				getByte(argument2, line);
+				getNewLine(temp_line, 45);
+				strcpy(line, temp_line);
+				getByte(argument1, temp_line);
+				complete("LD BC, ", argument2, argument1);
+				return buffer;
+			}
+			else if(check_byte == 2){  // se necesitan dos bytes que estan en la siguiente linea
+				getNewLine(temp_line, 45);
+				strcpy(line, temp_line);
+				getByte(argument2, temp_line);
+				getByte(argument1, temp_line);
+				complete("LD BC, ", argument2, argument1);
+				return buffer;
+			}
+			// no hay bytes que se necesiten en la siguiente linea
 			getByte(argument2, line);
 			getByte(argument1, line);
 			complete("LD BC, ", argument2, argument1);
@@ -2336,4 +2387,5 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 			printf("Error: formato incorrecto");
 			return "ERROR";
 	}
+	
 }
