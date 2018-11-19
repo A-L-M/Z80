@@ -87,8 +87,8 @@ void getNewLine(char line[], int size){
 void complete(const char *arg1, char arg2[], char arg3[]){  //junta primera parte de mnemonico con n o nn, inserta H al final
 	char aux[20];
 	strcpy(aux, arg1);
-	strcat(arg2, arg3);
-	strcat(aux, arg2);
+	strcat(arg3, arg2);
+	strcat(aux, arg3);
 	strcat(aux, "H");
 	strcpy(buffer, aux);
 }
@@ -96,8 +96,8 @@ void complete(const char *arg1, char arg2[], char arg3[]){  //junta primera part
 void attach(const char *arg1, char arg2[], char arg3[]){  //junta primera parte de mnemonico con n o nn, no inserta H al final
 	char aux[20];
 	strcpy(aux, arg1);
-	strcat(arg2, arg3);
-	strcat(aux, arg2);
+	strcat(arg3, arg2);
+	strcat(aux, arg3);
 	strcpy(buffer, aux);
 }
 
