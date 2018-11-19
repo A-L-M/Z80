@@ -71,6 +71,7 @@ int checkEndLine(int need_bytes, char line[]){
 		}
 		return 0;
 	}
+	return 0;
 }
 
 void getNewLine(char line[], int size){
@@ -96,8 +97,8 @@ void complete(const char *arg1, char arg2[], char arg3[]){  //junta primera part
 void attach(const char *arg1, char arg2[], char arg3[]){  //junta primera parte de mnemonico con n o nn, no inserta H al final
 	char aux[20];
 	strcpy(aux, arg1);
-	strcat(arg3, arg2);
-	strcat(aux, arg3);
+	strcat(arg2, arg3);
+	strcat(aux, arg2);
 	strcpy(buffer, aux);
 }
 
@@ -296,6 +297,9 @@ char *newSwitch(int opcode, char line[], int nextbyte){
                             strcat(buffer, argument1);
                             strcat(buffer, ")");
                             return buffer;
+						default:
+							printf("Error: formato incorrecto");
+							return "ERROR";
 	                }
 
                 case 0x09:                                  //ADD  IX,BC
@@ -485,346 +489,11 @@ char *newSwitch(int opcode, char line[], int nextbyte){
                     return "PUSH IX";
                 case 0xE9:                                  //JP   (IX)
                     return "JP (IX)";
+				default:
+					printf("Error: formato incorrecto");
+					return "ERROR";
 	        }
-        case 0xED:
-            switch(nextbyte){
-                case 0x00: 
-                    strcpy(buffer, "MOS_QUIT");
-                    return buffer;
-                case 0x01:
-                    strcpy(buffer, "MOS_CLI");
-                    return buffer;
-                case 0x02: 
-                    strcpy(buffer, "MOS_BYTE");
-                    return buffer;
-                case 0x03: 
-                    strcpy(buffer, "MOS_WORD");
-                    return buffer;
-                case 0x04: 
-                    strcpy(buffer, "MOS_WRCH");
-                    return buffer;
-                case 0x05: 
-                    strcpy(buffer, "MOS_RDCH");
-                    return buffer;
-                case 0x06: 
-                    strcpy(buffer, "MOS_FILE");
-                    return buffer;
-                case 0x07: 
-                    strcpy(buffer, "MOS_ARGS");
-                    return buffer;
-                case 0x08: 
-                    strcpy(buffer, "MOS_BGET");
-                    return buffer;
-                case 0x09: 
-                    strcpy(buffer, "MOS_BPUT");
-                    return buffer;
-                case 0x0A: 
-                    strcpy(buffer, "MOS_GBPB");
-                    return buffer;
-                case 0x0B: 
-                    strcpy(buffer, "MOS_FIND");
-                    return buffer;
-                case 0x0C:  
-                    strcpy(buffer, "MOS_FF0C");
-                    return buffer;
-                case 0x0D:
-                    strcpy(buffer, "MOS_FF0D");
-                    return buffer;
-                case 0x0E:  
-                    strcpy(buffer, "MOS_FF0E");
-                    return buffer;
-                case 0x0F:
-                    strcpy(buffer, "MOS_FF0F");
-                    return buffer; 
-                case 0x40: 
-                    strcpy(buffer, "IN B,(C)");
-                    return buffer; 
-                case 0x41: 
-                    strcpy(buffer, "OUT (C),B");
-                    return buffer; 
-                case 0x42: 
-                    strcpy(buffer, "SBC HL,BC");
-                    return buffer; 
-                case 0x43: 
-                    getByte(argument2, line);
-                    getByte(argument1, line);
-                    complete("LD (", argument2, argument1);
-                    strcat(buffer, "), BC");
-                    return buffer;
-                case 0x44: 
-                    strcpy(buffer, "NEG");
-                    return buffer;
-                case 0x45: 
-                    strcpy(buffer, "RETN");
-                    return buffer;
-                case 0x46: 
-                    strcpy(buffer, "IM 0");
-                    return buffer;
-                case 0x47: 
-                    strcpy(buffer, "LD I,A");
-                    return buffer;
-                case 0x48: 
-                    strcpy(buffer, "IN C,(C)");
-                    return buffer;
-                case 0x49: 
-                    strcpy(buffer, "OUT (C),C");
-                    return buffer;
-                case 0x4A: 
-                    strcpy(buffer, "ADC HL,BC");
-                    return buffer;
-                case 0x4B: 
-                    getByte(argument2, line);
-                    getByte(argument1, line);
-                    complete("LD BC,(", argument2, argument1);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x4C:
-                    strcpy(buffer, "[neg]");
-                    return buffer; 
-                case 0x4D: 
-                    strcpy(buffer, "RETI");
-                    return buffer;
-                case 0x4E: 
-                    strcpy(buffer, "[im0]");
-                    return buffer;
-                case 0x4F: 
-                    strcpy(buffer, "LD R,A");
-                    return buffer; 
-                case 0x50: 
-                    strcpy(buffer, "IN D,(C)");
-                    return buffer;
-                case 0x51: 
-                    strcpy(buffer, "OUT (C),D");
-                    return buffer; 
-                case 0x52: 
-                    strcpy(buffer, "SBC HL,DE");
-                    return buffer;
-                case 0x53: 
-                    getByte(argument2, line);
-                    getByte(argument1, line);
-                    complete("LD (", argument2, argument1);
-                    strcat(buffer, "), DE");
-                    return buffer;
-                case 0x54:
-                    strcpy(buffer, "[neg]");
-                    return buffer;
-                case 0x55:
-                    strcpy(buffer, "[retn]");
-                    return buffer; 
-                case 0x56: 
-                    strcpy(buffer, "IM 1");
-                    return buffer;
-                case 0x57: 
-                    strcpy(buffer, "LD A,I");
-                    return buffer;
-                case 0x58: 
-                    strcpy(buffer, "IN E,(C)");
-                    return buffer;
-                case 0x59:
-                    strcpy(buffer, "OUT (C),E");
-                    return buffer; 
-                case 0x5A:
-                    strcpy(buffer, "ADC HL,DE");
-                    return buffer;
-                case 0x5B:
-                    getByte(argument2, line);
-                    getByte(argument1, line);
-                    complete("LD DE,(", argument2, argument1);
-                    strcat(buffer, ")");
-                    return buffer; 
-                case 0x5C:
-                    strcpy(buffer, "[neg]");
-                    return buffer;
-                case 0x5D:
-                    strcpy(buffer, "[reti]");
-                    return buffer; 
-                case 0x5E:
-                    strcpy(buffer, "IM 2");
-                    return buffer; 
-                case 0x5F:
-                    strcpy(buffer, "LD A,R");
-                    return buffer; 
-                case 0x60: 
-                    strcpy(buffer, "IN H,(C)");
-                    return buffer; 
-                case 0x61:
-                    strcpy(buffer, "OUT (C),H");
-                    return buffer; 
-                case 0x62:
-                    strcpy(buffer, "SBC HL,HL");
-                    return buffer; 
-                case 0x63:
-                    getByte(argument2, line);
-                    getByte(argument1, line);
-                    complete("LD (", argument2, argument1);
-                    strcat(buffer, "), HL");
-                    return buffer;
-                case 0x64:
-                    strcpy(buffer, "[neg]");
-                    return buffer; 
-                case 0x65:
-                    strcpy(buffer, "[retn]");
-                    return buffer;
-                case 0x66:
-                    strcpy(buffer, "[im0]");
-                    return buffer;
-                case 0x67:
-                    strcpy(buffer, "RRD");
-                    return buffer; 
-                case 0x68:
-                    strcpy(buffer, "IN L,(C)");
-                    return buffer;
-                case 0x69:
-                    strcpy(buffer, "OUT (C),L");
-                    return buffer;
-                case 0x6A:
-                    strcpy(buffer, "ADC HL,HL");
-                    return buffer; 
-                case 0x6B:
-                    getByte(argument2, line);
-                    getByte(argument1, line);
-                    complete("LD HL,(", argument2, argument1);
-                    strcat(buffer, ")");
-                    return buffer; 
-                case 0x6C:
-                    strcpy(buffer, "[neg]");
-                    return buffer;
-                case 0x6D:
-                    strcpy(buffer, "[reti]");
-                    return buffer;
-                case 0x6E:
-                    strcpy(buffer, "[im0]");
-                    return buffer;
-                case 0x6F:
-                    strcpy(buffer, "RLD");
-                    return buffer;
-                case 0x70:
-                    strcpy(buffer, "IN F,(C)");
-                    return buffer;
-                case 0x71:
-                    strcpy(buffer, "OUT (C),F");
-                    return buffer;
-                case 0x72:
-                    strcpy(buffer, "SBC HL,SP");
-                    return buffer;
-                case 0x73:
-                    getByte(argument2, line);
-                    getByte(argument1, line);
-                    complete("LD (", argument2, argument1);
-                    strcat(buffer, "), SP");
-                    return buffer;
-                case 0x74:
-                    strcpy(buffer, "[neg]");
-                    return buffer;
-                case 0x75:
-                    strcpy(buffer, "[retn]");
-                    return buffer;
-                case 0x76:
-                    strcpy(buffer, "[im1]");
-                    return buffer;
-                case 0x77:
-                    strcpy(buffer, "[ld i,i?]");
-                    return buffer;
-                case 0x78:
-                    strcpy(buffer, "IN A,(C)");
-                    return buffer;
-                case 0x79:
-                    strcpy(buffer, "OUT (C),A");
-                    return buffer;
-                case 0x7A:
-                    strcpy(buffer, "ADC HL,SP");
-                    return buffer;
-                case 0x7B:
-                    getByte(argument2, line);
-                    getByte(argument1, line);
-                    complete("LD SP,(", argument2, argument1);
-                    strcat(buffer, ")");
-                    return buffer; 
-                case 0x7C:
-                    strcpy(buffer, "[neg]");
-                    return buffer;
-                case 0x7D:
-                    strcpy(buffer, "[reti]");
-                    return buffer;
-                case 0x7E:
-                    strcpy(buffer, "[im2]");
-                    return buffer;
-                case 0x7F:
-                    strcpy(buffer, "[ld r,r?]");
-                    return buffer;
-                case 0xA0:
-                    strcpy(buffer, "LDI");
-                    return buffer;
-                case 0xA1:
-                    strcpy(buffer, "CPI");
-                    return buffer;
-                case 0xA2:
-                    strcpy(buffer, "INI");
-                    return buffer;
-                case 0xA3:
-                    strcpy(buffer, "OTI");
-                    return buffer;
-                case 0xA8:
-                    strcpy(buffer, "LDD");
-                    return buffer;
-                case 0xA9:
-                    strcpy(buffer, "CPD");
-                    return buffer;
-                case 0xAA:
-                    strcpy(buffer, "IND");
-                    return buffer;
-                case 0xAB:
-                    strcpy(buffer, "OTD");
-                    return buffer;
-                case 0xB0:
-                    strcpy(buffer, "LDIR");
-                    return buffer;
-                case 0xB1:
-                    strcpy(buffer, "CPIR");
-                    return buffer;
-                case 0xB2:
-                    strcpy(buffer, "INIR");
-                    return buffer;
-                case 0xB3:
-                    strcpy(buffer, "OTIR");
-                    return buffer;
-                case 0xB8:
-                    strcpy(buffer, "LDDR");
-                    return buffer;
-                case 0xB9:
-                    strcpy(buffer, "CPDR");
-                    return buffer;
-                case 0xBA:
-                    strcpy(buffer, "INDR");
-                    return buffer;
-                case 0xBB:
-                    strcpy(buffer, "OTDR");
-                    return buffer;
-                case 0xF8:
-                    strcpy(buffer, "[z80]");
-                    return buffer;
-                case 0xF9:
-                    strcpy(buffer, "[z80]");
-                    return buffer;
-                case 0xFA:
-                    strcpy(buffer, "[z80]");
-                    return buffer;
-                case 0xFB:
-                    strcpy(buffer, "ED_LOAD");
-                    return buffer;
-                case 0xFC:
-                    strcpy(buffer, "[z80]");
-                    return buffer;
-                case 0xFD:
-                    strcpy(buffer, "[z80]");
-                    return buffer;
-                case 0xFE:
-                    strcpy(buffer, "[z80]");
-                    return buffer;
-                case 0xFF:
-                    strcpy(buffer, "ED_DOS");
-                    return buffer;
-        }
+        
         case 0xFD:
             switch(nextbyte){
 
@@ -1013,6 +682,9 @@ char *newSwitch(int opcode, char line[], int nextbyte){
                             strcat(buffer, argument1);
                             strcat(buffer, ")");
                             return buffer;
+						default:
+							printf("Error: formato incorrecto");
+							return "ERROR";
 	                }
 
                 case 0x09:                                  //ADD  IY,BC
@@ -1202,9 +874,14 @@ char *newSwitch(int opcode, char line[], int nextbyte){
                     return "PUSH IY";
                 case 0xE9:                                  //JP   (IY)
                     return "JP (IY)";
+				default:
+					printf("Error: formato incorrecto");
+					return "ERROR";
 	        }
+		default:
+			printf("Error: formato incorrecto");
+			return "ERROR";
 	}
-    return "";
 }
 
 char * getInstruction(int opcode, char line[], char byte[]) {
@@ -2230,7 +1907,6 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 					printf("Error: formato incorrecto");
 					return "ERROR";
 			}
-			return "Incompleto";
 		case 0xCC:									//  CALL Z, e
 			// funcion getEti()
 			return "Incompleto";
@@ -2330,8 +2006,254 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 			// funcion getEti()
 			return "Incompleto";
 		case 0xED:									//  ** ED **
+			getByte(byte, line);
+			opcode = (int) strtol(byte, NULL, 16);
 			// switch para ED
-			return "Incompleto";
+            switch(opcode){
+                case 0x00: 
+                    return "MOS_QUIT";
+                case 0x01:
+                    return "MOS_CLI";
+                case 0x02: 
+                    return "MOS_BYTE";
+                case 0x03: 
+                    return "MOS_WORD";
+                case 0x04: 
+                    return "MOS_WRCH";
+                case 0x05: 
+                    return "MOS_RDCH";
+                case 0x06: 
+                    return "MOS_FILE";
+                case 0x07: 
+                    return "MOS_ARGS";
+                case 0x08: 
+                    return "MOS_BGET";
+                case 0x09: 
+                    return "MOS_BPUT";
+                case 0x0A: 
+                    return "MOS_GBPB";
+                case 0x0B: 
+                    return "MOS_FIND";
+                case 0x0C:  
+                    return "MOS_FF0C";
+                case 0x0D:
+                    return "MOS_FF0D";
+                case 0x0E:  
+                    return "MOS_FF0E";
+                case 0x0F:
+                    return "MOS_FF0F";
+                case 0x40: 
+                	return "IN B,(C)";
+                case 0x41: 
+                    return "OUT (C),B";
+                case 0x42: 
+                    return "SBC HL,BC";
+                case 0x43: 
+                    getByte(argument2, line);
+                    getByte(argument1, line);
+                    complete("LD (", argument2, argument1);
+                    strcat(buffer, "), BC");
+                    return buffer;
+                case 0x44: 
+                    return "NEG";
+                case 0x45: 
+                    return "RETN";
+                case 0x46: 
+                    return "IM 0";
+                case 0x47: 
+                    return "LD I,A";
+                case 0x48: 
+                    return "IN C,(C)";
+                case 0x49: 
+                    return "OUT (C),C";
+                case 0x4A: 
+                    return "ADC HL,BC";
+                case 0x4B: 
+                    getByte(argument2, line);
+                    getByte(argument1, line);
+                    complete("LD BC,(", argument2, argument1);
+                    strcat(buffer, ")");
+                    return buffer;
+                case 0x4C:
+                    return "[neg]"; 
+                case 0x4D: 
+                    return "RETI";
+                case 0x4E: 
+                    return "[im0]";
+                case 0x4F: 
+                    return "LD R,A"; 
+                case 0x50: 
+                    return "IN D,(C)";
+                case 0x51: 
+                    return "OUT (C),D";
+                case 0x52: 
+                    return "SBC HL,DE";
+                case 0x53: 
+                    getByte(argument2, line);
+                    getByte(argument1, line);
+                    complete("LD (", argument2, argument1);
+                    strcat(buffer, "), DE");
+                    return buffer;
+                case 0x54:
+                    return "[neg]";
+                case 0x55:
+                    return "[retn]";
+                case 0x56: 
+                    return "IM 1";
+                case 0x57: 
+                    return "LD A,I";
+                case 0x58: 
+                    return "IN E,(C)";
+                case 0x59:
+                    return "OUT (C),E";
+                case 0x5A:
+                    return "ADC HL,DE";
+                case 0x5B:
+                    getByte(argument2, line);
+                    getByte(argument1, line);
+                    complete("LD DE,(", argument2, argument1);
+                    strcat(buffer, ")");
+                    return buffer; 
+                case 0x5C:
+                    return "[neg]";
+                case 0x5D:
+                    return "[reti]";
+                case 0x5E:
+                    return "IM 2"; 
+                case 0x5F:
+                    return "LD A,R";
+                case 0x60: 
+                    return "IN H,(C)";
+                case 0x61:
+                    return "OUT (C),H";
+                case 0x62:
+                    return "SBC HL,HL";
+                case 0x63:
+                    getByte(argument2, line);
+                    getByte(argument1, line);
+                    complete("LD (", argument2, argument1);
+                    strcat(buffer, "), HL");
+                    return buffer;
+                case 0x64:
+                    return "[neg]"; 
+                case 0x65:
+                    return "[retn]";
+                case 0x66:
+                    return "[im0]";
+                case 0x67:
+                    return "RRD"; 
+                case 0x68:
+                    return "IN L,(C)";
+                case 0x69:
+                    return "OUT (C),L";
+                case 0x6A:
+                    return "ADC HL,HL";
+                case 0x6B:
+                    getByte(argument2, line);
+                    getByte(argument1, line);
+                    complete("LD HL,(", argument2, argument1);
+                    strcat(buffer, ")");
+                    return buffer; 
+                case 0x6C:
+                    return "[neg]";
+                case 0x6D:
+                    return "[reti]";
+                case 0x6E:
+                    return "[im0]";
+                case 0x6F:
+                    return "RLD";
+                case 0x70:
+                    return "IN F,(C)";
+                case 0x71:
+                	return "OUT (C),F";
+                case 0x72:
+                    return "SBC HL,SP";
+                case 0x73:
+                    getByte(argument2, line);
+                    getByte(argument1, line);
+                    complete("LD (", argument2, argument1);
+                    strcat(buffer, "), SP");
+                    return buffer;
+                case 0x74:
+                    return "[neg]";
+                case 0x75:
+                    return "[retn]";
+                case 0x76:
+                    return "[im1]";
+                case 0x77:
+                    return "[ld i,i?]";
+                case 0x78:
+                    return "IN A,(C)";
+                case 0x79:
+                    return "OUT (C),A";
+                case 0x7A:
+                    return "ADC HL,SP";
+                case 0x7B:
+                    getByte(argument2, line);
+                    getByte(argument1, line);
+                    complete("LD SP,(", argument2, argument1);
+                    strcat(buffer, ")");
+                    return buffer; 
+                case 0x7C:
+                    return "[neg]";
+                case 0x7D:
+                    return "[reti]";
+                case 0x7E:
+                    return "[im2]";
+                case 0x7F:
+                    return "[ld r,r?]";
+                case 0xA0:
+                    return "LDI";
+                case 0xA1:
+                    return "CPI";
+                case 0xA2:
+                    return "INI";
+                case 0xA3:
+                    return "OTI";
+                case 0xA8:
+                    return "LDD";
+                case 0xA9:
+                    return "CPD";
+                case 0xAA:
+                    return "IND";
+                case 0xAB:
+                    return "OTD";
+                case 0xB0:
+                    return "LDIR";
+                case 0xB1:
+                    return "CPIR";
+                case 0xB2:
+                    return "INIR";
+                case 0xB3:
+                    return "OTIR";
+                case 0xB8:
+                    return "LDDR";
+                case 0xB9:
+                    return "CPDR";
+                case 0xBA:
+                    return "INDR";
+                case 0xBB:
+                    return "OTDR";
+                case 0xF8:
+                    return "[z80]";
+                case 0xF9:
+                    return "[z80]";
+                case 0xFA:
+                    return"[z80]";
+                case 0xFB:
+                    return "ED_LOAD";
+                case 0xFC:
+                    return "[z80]";
+                case 0xFD:
+                    return "[z80]";
+                case 0xFE:
+                    return "[z80]";
+                case 0xFF:
+                    return "ED_DOS";
+				default:
+					printf("Error: formato incorrecto");
+					return "ERROR";
+        }
 		case 0xEE:									//  XOR n
 			getByte(argument1, line);
 			strcpy(argument2, "");
