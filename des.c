@@ -8,44 +8,36 @@ void getByte(char [], char []);
 void complete(const char *, char [], char []);
 void attach(const char *, char [], char []);
 char *newSwitch(int, char [], int);
-int checkEndLine(int, char []);
-void getNewLine(char [], int);
+int countLines(char *);
+char *getLines(char *, int);
 
-int i = 0;  //contador
-int dbytes_in_line;  //cantidad de bytes que representan codigos de operacion en una linea del archivo
+int i;  //contador
+int num_total_bytes = 0; // numero total de bytes que abarca el programa
 char buffer[20];  //almacenamiento temporal para retorno en getInstruction
-FILE *file;
+
 
 int main(int argvc, char **argv) {
-	char line[45];  //linea del archivo .hex
-	char byte[3];
-    int opcode;  //codigo de operacion, guardado en base 10
-    char *mnemonico;
+	int num_lines;  // num_lines guardará la cantidad de lineas del archivo, i es contador
+	int opcode;  // guardara un byte en base 10
+	char byte[3]; // almacena un byte individual
+	char *mnemonico; //almacena la instruccion completa
 
-    file = fopen("test.txt", "r");
-    if (file == NULL){
-        puts("Unable to open the file");
-    }
-	else
-	{
-        while ( fgets(line, sizeof(line), file) != NULL )
-		{
-            byte[0] = line[1];
-            byte[1] = line[2];
-            dbytes_in_line = (int) strtol(byte, NULL, 16);  //Toma la cadena almacenada en byte[] y la convierte a int, leyendo en base 16
-            dbytes_in_line = (dbytes_in_line * 2) + 9;  //dos digitos por byte, +9 digitos que se ignoran al inicio
-            for(i=9; i < dbytes_in_line;)
-			{
-				getByte(byte, line);
-				opcode = (int) strtol(byte, NULL, 16);
-				mnemonico = getInstruction(opcode, line, byte);
-				printf("%s\n", mnemonico);
-			}
-			dbytes_in_line = 0;
-            printf("\n");
-        }
-        fclose(file);
-    }
+	num_lines = countLines("test.txt");  // countLines regresa el numero de lineas CON INSTRUCCIONES (no cuenta la ultima)
+	
+	/*se crea un arreglo que almacenará todos los bytes que representan codigo de operacion del programa. Cada byte son 2 caracteres,
+	en una linea puede haber maximo 16 bytes, por el total de lineas: se tiene el tamaño maximo que debe tener el arreglo*/
+	char total_bytes[(num_lines*32)+1];  // se suma uno para tener espacio para la copia de temp a total_bytes
+	char *temp = getLines("test.txt", num_lines);
+	strcpy(total_bytes, temp);
+	free(temp);
+
+	for(i = 0; i < num_total_bytes*2;){
+		getByte(byte, total_bytes);
+		opcode = (int) strtol(byte, NULL, 16);
+		mnemonico = getInstruction(opcode, total_bytes, byte);
+		printf("%s\n", mnemonico);
+	}
+	
     return EXIT_SUCCESS;
 }
 
@@ -55,33 +47,50 @@ void getByte(char argument[], char line[]){
 	i += 2;
 }
 
-int checkEndLine(int need_bytes, char line[]){
-	if(need_bytes == 1){
-		if(line[i+4] == '\n'){
-			return 1;
+int countLines(char * filename){
+	FILE *file = fopen(filename, "r");
+	if (file == NULL){
+        puts("Unable to open the file");
+    }
+	else{
+		int lines = 0;
+		while(!feof(file))
+		{
+		  	if(fgetc(file) == '\n')
+		  	{
+		    	lines++;
+		  	}
 		}
-		return 0;
+		fclose(file);
+		return lines;
 	}
-	else if(need_bytes == 2){
-		if(line[i+2] == '\n'){
-			return 2;
-		}
-		else if(line[i+4] == '\n'){
-			return 1;
-		}
-		return 0;
-	}
+	return 0;
 }
-
-void getNewLine(char line[], int size){
-	char byte[3];
-	fgets(line, size, file);
-	byte[0] = line[1];
-    byte[1] = line[2];
-	dbytes_in_line = (int) strtol(byte, NULL, 16);  //Toma la cadena almacenada en byte[] y la convierte a int, leyendo en base 16
-    dbytes_in_line = (dbytes_in_line * 2) + 9;  //dos digitos por byte, +9 digitos que se ignoran al inicio
-	i = 9;
-	printf("\n");
+char * getLines(char * filename, int num_lines){
+	FILE *file = fopen(filename, "r");
+	if (file == NULL){
+        puts("Unable to open the file");
+    }
+	else{
+		char line[45], byte[3];
+		char *total_bytes = malloc((num_lines*32)*sizeof(char));
+		int k,j, dbytes_in_line;
+		int index = 0;
+		for(k = 0; k < num_lines; k++){
+			fgets(line, sizeof(line), file);
+			byte[0] = line[1];
+			byte[1] = line[2];
+			dbytes_in_line = (int) strtol(byte, NULL, 16);  //Toma la cadena almacenada en byte[] y la convierte a int, leyendo en base 16
+			num_total_bytes = num_total_bytes + dbytes_in_line;
+            dbytes_in_line = (dbytes_in_line * 2) + 9;  //dos digitos por byte, +9 digitos que se ignoran al inicio
+            for(j = 9; j < dbytes_in_line; j++, index++){
+            	total_bytes[index] = line[j];
+			}
+		}
+		fclose(file);
+		return total_bytes;
+	}
+	return "Error";
 }
 
 void complete(const char *arg1, char arg2[], char arg3[]){  //junta primera parte de mnemonico con n o nn, inserta H al final
@@ -102,8 +111,8 @@ void attach(const char *arg1, char arg2[], char arg3[]){  //junta primera parte 
 }
 
 char *newSwitch(int opcode, char line[], int nextbyte){
-    char argument1[20];
-	char argument2[20];
+    char argument1[20] = {0};
+	char argument2[20] = {0};
     int opbyte;
 
 	switch(opcode){
@@ -153,9 +162,8 @@ char *newSwitch(int opcode, char line[], int nextbyte){
                             strcat(buffer, ")");
                             return buffer;
                         case 0x46:                                  //BIT  0,(IX+d)
-                            attach("BIT ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
+                        	strcpy(argument2, "");
+                            attach("BIT 0, (IX+", argument1, argument2);
                             strcat(buffer, ")");
                             return buffer;
                         case 0x4E:                                  //BIT  1,(IX+d)
@@ -1208,38 +1216,15 @@ char *newSwitch(int opcode, char line[], int nextbyte){
 }
 
 char * getInstruction(int opcode, char line[], char byte[]) {
-	char argument1[20];  //byte mas significativo
-	char argument2[20];  //byte menos significativo
-	char temp_line[45];
-	int nextbyte, check_byte;
-	
+	char argument1[20] = {0};  //byte mas significativo
+	char argument2[20] = {0};  //byte menos significativo
+	int nextbyte;
 
-	/*AGREGAR H AL FINAL DE HEXADECIMAL*/
-	/*SI LA INSTRUCCION SE CORTA PORQUE SE ACABO LA LINEA, FALLA. Se puede poner getNewLine()*/
-	/*PONER INSTRUCCIONES DE DD Y FD EN UN SOLO SWITCH*/
 	switch(opcode){
 
 		case 0x00:									//	NOP
 			return "NOP";
 		case 0x01:									//	LD BC, nn
-			check_byte = checkEndLine(2, line);  //se necesitan dos bytes para completar la instruccion
-			if(check_byte == 1){  // se necesita un byte que esta en la siguiente linea
-				getByte(argument2, line);
-				getNewLine(temp_line, 45);
-				strcpy(line, temp_line);
-				getByte(argument1, temp_line);
-				complete("LD BC, ", argument2, argument1);
-				return buffer;
-			}
-			else if(check_byte == 2){  // se necesitan dos bytes que estan en la siguiente linea
-				getNewLine(temp_line, 45);
-				strcpy(line, temp_line);
-				getByte(argument2, temp_line);
-				getByte(argument1, temp_line);
-				complete("LD BC, ", argument2, argument1);
-				return buffer;
-			}
-			// no hay bytes que se necesiten en la siguiente linea
 			getByte(argument2, line);
 			getByte(argument1, line);
 			complete("LD BC, ", argument2, argument1);
