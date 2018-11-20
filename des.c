@@ -10,10 +10,13 @@ void attach(const char *, char [], char []);
 char *newSwitch(int, char [], int);
 int countLines(char *);
 char *getLines(char *, int);
+char *getEti_r(char []);
+int getEti_p(uint16_t, uint16_t [], int);
 
 int i;  //contador
 int num_total_bytes = 0; // numero total de bytes que abarca el programa
 char buffer[20];  //almacenamiento temporal para retorno en getInstruction
+
 
 
 int main(int argvc, char **argv) {
@@ -21,6 +24,8 @@ int main(int argvc, char **argv) {
 	int opcode;  // guardara un byte en base 10
 	char byte[3]; // almacena un byte individual
 	char *mnemonico; //almacena la instruccion completa
+    uint16_t CL_n = 0x0000;
+    uint16_t CL_p = 0x0000;
 
 	num_lines = countLines("test.txt");  // countLines regresa el numero de lineas CON INSTRUCCIONES (no cuenta la ultima)
 	
@@ -31,15 +36,45 @@ int main(int argvc, char **argv) {
 	strcpy(total_bytes, temp);
 	free(temp);
 
+    int aux;
+    int num_of_eti = 0;
+
 	for(i = 0; i < num_total_bytes*2;){
+        aux = i;
+        CL_p = CL_n;
 		getByte(byte, total_bytes);
 		opcode = (int) strtol(byte, NULL, 16);
 		mnemonico = getInstruction(opcode, total_bytes, byte);
+        aux = (i - aux)/2;
+        CL_n = CL_n + aux;
+        printf("%i\t", CL_p);
 		printf("%s\n", mnemonico);
 	}
+    uint16_t symbols[CL_n+1];
 	
+
     return EXIT_SUCCESS;
 }
+
+
+
+int getEti_p(uint16_t cl, uint16_t symbols[], int symbols_size){
+    int index = 0; 
+    while (index < symbols_size){
+        if (cl == symbols[index])
+            return index;
+        i++;
+        
+    }
+    symbols[index+1] = cl;
+    return index+1;
+}
+
+char *getEti_r(char argument1[]){
+    return "ETI1";
+}
+
+
 
 void getByte(char argument[], char line[]){
 	argument[0] = line[i];
@@ -895,6 +930,7 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 	char argument1[20] = {0};  //byte mas significativo
 	char argument2[20] = {0};  //byte menos significativo
 	int nextbyte;
+    char *eti;
 
 	switch(opcode){
 
@@ -1009,9 +1045,12 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 			return buffer;
 		case 0x27:									//  DAA
 			return "DAA";
-		case 0x28:									//  JR Z, e
-			//funcion getEti()
-			return "Incompleto";
+		case 0x28:                                  //  JR Z, e
+            getByte(argument1, line);									
+			eti = getEti_r(argument1);
+			strcpy(buffer, "JR Z, ");
+            strcat(buffer, eti);
+            return buffer;
 		case 0x29:									//  ADD HL, HL
 			return "ADD HL, HL";
 		case 0x2A:									//  LD HL, (nn)
@@ -1367,8 +1406,12 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0xC9:									//  RET
 			return "RET";
 		case 0xCA:									//  JP Z, e
-			// funcion getEti()
-			return "Incompleto";
+			//getByte(argument2, line);
+            //getByte(argument1, line);
+            //eti = getEti_p(argument2, argument1);
+			//strcpy(buffer, "JP Z, ");
+            //strcat(buffer, eti);
+            return "JP Z, e";
 		case 0xCB:									//  ** CB **
 			getByte(byte, line);
 			opcode = (int) strtol(byte, NULL, 16);
