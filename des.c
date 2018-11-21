@@ -11,11 +11,14 @@ char *newSwitch(int, char [], int);
 int countLines(char *);
 char *getLines(char *, int);
 char *getEti_r(char []);
-int getEti_p(uint16_t, uint16_t [], int);
+char *getEti_p(uint16_t);
 
-int i;  //contador
-int num_total_bytes = 0; // numero total de bytes que abarca el programa
-char buffer[20];  //almacenamiento temporal para retorno en getInstruction
+int i;  					//contador
+int num_total_bytes = 0; 	// numero total de bytes que abarca el programa
+char buffer[20];  			//almacenamiento temporal para retorno en getInstruction
+uint16_t symbols[100];		//Tabla de simbolos
+uint16_t cl;				//Contador de localidades asociado a las etiquetas
+char eti[6];				//Nombres de las etiquetas
 
 
 
@@ -39,6 +42,10 @@ int main(int argvc, char **argv) {
     int aux;
     int num_of_eti = 0;
 
+	for(i = 0; i < 100; i++){			//Se inicializa tabla de simbolos
+		symbols[i] = 0x0000;
+	}
+
 	for(i = 0; i < num_total_bytes*2;){
         aux = i;
         CL_p = CL_n;
@@ -50,24 +57,33 @@ int main(int argvc, char **argv) {
         printf("%i\t", CL_p);
 		printf("%s\n", mnemonico);
 	}
-    uint16_t symbols[CL_n+1];
-	
-
+		
     return EXIT_SUCCESS;
 }
 
 
-
-int getEti_p(uint16_t cl, uint16_t symbols[], int symbols_size){
-    int index = 0; 
-    while (index < symbols_size){
-        if (cl == symbols[index])
-            return index;
+char *getEti_p(uint16_t cl){
+    int index = 0;
+	char aux[12];	//Todos los números enteros caben en un arreglo de 12 carcateres
+    while (symbols[index] != 0x0000 && index < 100){
+        if (cl == symbols[index]){
+			strcpy(eti, "ETI");
+			sprintf(aux, "%d", index); //Se copia el arreglo de caracteres en un arreglo
+			strcat(eti, aux);
+			return eti;
+		}
         i++;
         
     }
-    symbols[index+1] = cl;
-    return index+1;
+	if(index < 100){
+		index = index;
+		symbols[index] = cl;
+		strcpy(eti, "ETI");
+		sprintf(aux, "%d", index);
+		strcat(eti, aux);
+		return eti;
+	}else
+	return "ERROR";
 }
 
 char *getEti_r(char argument1[]){
@@ -930,7 +946,7 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 	char argument1[20] = {0};  //byte mas significativo
 	char argument2[20] = {0};  //byte menos significativo
 	int nextbyte;
-    char *eti;
+    char name[6];
 
 	switch(opcode){
 
@@ -1046,10 +1062,10 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0x27:									//  DAA
 			return "DAA";
 		case 0x28:                                  //  JR Z, e
-            getByte(argument1, line);									
+            /*getByte(argument1, line);									
 			eti = getEti_r(argument1);
 			strcpy(buffer, "JR Z, ");
-            strcat(buffer, eti);
+            strcat(buffer, eti);*/
             return buffer;
 		case 0x29:									//  ADD HL, HL
 			return "ADD HL, HL";
@@ -1406,12 +1422,15 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0xC9:									//  RET
 			return "RET";
 		case 0xCA:									//  JP Z, e
-			//getByte(argument2, line);
-            //getByte(argument1, line);
-            //eti = getEti_p(argument2, argument1);
-			//strcpy(buffer, "JP Z, ");
-            //strcat(buffer, eti);
-            return "JP Z, e";
+			getByte(argument2, line);
+            getByte(argument1, line);
+			strcpy(buffer, argument2);
+			strcat(buffer, argument1);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+            strcpy (name, getEti_p(cl));
+			strcpy(buffer, "JP Z, ");
+            strcat(buffer, eti);
+            return buffer;
 		case 0xCB:									//  ** CB **
 			getByte(byte, line);
 			opcode = (int) strtol(byte, NULL, 16);
