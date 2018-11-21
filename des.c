@@ -6,8 +6,8 @@
 char *getInstruction(int, char[], char[]);
 void getByte(char [], char []);
 void complete(const char *, char [], char []);
-void attach(const char *, char [], char []);
-char *newSwitch(int, char [], int);
+void completeNewSwitch(const char *, char[], char [], char []);
+char *newSwitch(char [], char []);
 int countLines(char *);
 char *getLines(char *, int);
 char *getEti_r(char []);
@@ -32,12 +32,12 @@ int main(int argvc, char **argv) {
 
 	num_lines = countLines("test.txt");  // countLines regresa el numero de lineas CON INSTRUCCIONES (no cuenta la ultima)
 	
-	/*se crea un arreglo que almacenar� todos los bytes que representan codigo de operacion del programa. Cada byte son 2 caracteres,
-	en una linea puede haber maximo 16 bytes, por el total de lineas: se tiene el tama�o maximo que debe tener el arreglo*/
+	/*se crea un arreglo que almacenara todos los bytes que representan codigo de operacion del programa. Cada byte son 2 caracteres,
+	en una linea puede haber maximo 16 bytes, por el total de lineas: se tiene el tamano maximo que debe tener el arreglo*/
 	char total_bytes[(num_lines*32)+1];  // se suma uno para tener espacio para la copia de temp a total_bytes
 	char *temp = getLines("test.txt", num_lines);
 	strcpy(total_bytes, temp);
-	free(temp);
+	free(temp); // se libera memoria asignada dentro de la funcion getLines()
 
     int aux;
     int num_of_eti = 0;
@@ -144,7 +144,7 @@ char * getLines(char * filename, int num_lines){
 	return "Error";
 }
 
-void complete(const char *arg1, char arg2[], char arg3[]){  //junta primera parte de mnemonico con n o nn, inserta H al final
+void complete(const char *arg1, char arg2[], char arg3[]){  // junta primera parte de mnemonico con n o nn, inserta H al final
 	char aux[20];
 	strcpy(aux, arg1);
 	strcat(arg3, arg2);
@@ -153,793 +153,467 @@ void complete(const char *arg1, char arg2[], char arg3[]){  //junta primera part
 	strcpy(buffer, aux);
 }
 
-void attach(const char *arg1, char arg2[], char arg3[]){  //junta primera parte de mnemonico con n o nn, no inserta H al final
+void completeNewSwitch(const char *arg1, char option[], char arg2[], char arg3[]){
+	//junta primera parte de mnemonico con IX o IY, luego con n o nn, inserta H al final
 	char aux[20];
 	strcpy(aux, arg1);
-	strcat(arg2, arg3);
-	strcat(aux, arg2);
+	strcat(aux, option);
+	strcat(arg3, arg2);
+	strcat(aux, arg3);
+	strcat(aux, "H");
 	strcpy(buffer, aux);
 }
 
-char *newSwitch(int opcode, char line[], int nextbyte){
+char *newSwitch(char line[], char ins[]){
     char argument1[20] = {0};
 	char argument2[20] = {0};
     int opbyte;
+	
+	getByte(argument1, line);
+	opbyte = (int) strtol(argument1, NULL, 16);
+	
+	    switch(opbyte){
 
-	switch(opcode){
-
-	    case 0xDD:
-	        switch(nextbyte){
-
-	            case 0xCB:
-	                getByte(argument1, line);
-	                getByte(argument2, line);
-                    opbyte = (int) strtol(argument2, NULL, 16);
-	                switch(opbyte){
-
-	                    case 0x06:                                  //RLC  (IX+d)
-                            strcpy(argument2, "");
-                            attach("RLC (IX+", argument1, argument2);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x0E:                                  //RRC  (IX+d)
-                            strcpy(argument2, "");
-                            attach("RRC (IX+", argument1, argument2);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x16:                                  //RL   (IX+d)
-                            strcpy(argument2, "");
-                            attach("RL (IX+", argument1, argument2);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x1E:                                  //RR   (IX+d)
-                            strcpy(argument2, "");
-                            attach("RR (IX+", argument1, argument2);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x26:                                  //SLA  (IX+d)
-                            strcpy(argument2, "");
-                            attach("SLA (IX+", argument1, argument2);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x2E:                                  //SRA  (IX+d)
-                            strcpy(argument2, "");
-                            attach("SRA (IX+", argument1, argument2);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x3E:                                  //SRL  (IX+d)
-                            strcpy(argument2, "");
-                            attach("SRL (IX+", argument1, argument2);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x46:                                  //BIT  0,(IX+d)
-                        	strcpy(argument2, "");
-                            attach("BIT 0, (IX+", argument1, argument2);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x4E:                                  //BIT  1,(IX+d)
-                            attach("BIT ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x56:                                  //BIT  2,(IX+d)
-                            attach("BIT ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x5E:                                  //BIT  3,(IX+d)
-                            attach("BIT ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x66:                                  //BIT  4,(IX+d)
-                            attach("BIT ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x6E:                                  //BIT  5,(IX+d)
-                            attach("BIT ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x76:                                  //BIT  6,(IX+d)
-                            attach("BIT ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x7E:                                  //BIT  7,(IX+d)
-                            attach("BIT ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x86:                                  //RES  0,(IX+d)
-                            attach("RES ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x8E:                                  //RES  1,(IX+d)
-                            attach("RES ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x96:                                  //RES  2,(IX+d)
-                            attach("RES ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x9E:                                  //RES  3,(IX+d)
-                            attach("RES ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xA6:                                  //RES  4,(IX+d)
-                            attach("RES ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xAE:                                  //RES  5,(IX+d)
-                            attach("RES ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xB6:                                  //RES  6,(IX+d)
-                            attach("RES ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xBE:                                  //RES  7,(IX+d)
-                            attach("RES ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xC6:                                  //SET  0,(IX+d)
-                            attach("SET ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xCE:                                  //SET  1,(IX+d)
-                            attach("SET ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xD6:                                  //SET  2,(IX+d)
-                            attach("SET ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xDE:                                  //SET  3,(IX+d)
-                            attach("SET ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xE6:                                  //SET  4,(IX+d)
-                            attach("SET ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xEE:                                  //SET  5,(IX+d)
-                            attach("SET ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xF6:                                  //SET  6,(IX+d)
-                            attach("SET ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xFE:                                  //SET  7,(IX+d)
-                            attach("SET ", argument2, "");
-                            strcat(buffer, ", (IX+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-						default:
-							printf("Error: formato incorrecto");
-							return "ERROR";
+			case 0xCB:
+	            getByte(argument1, line);
+	            getByte(argument2, line);
+            	opbyte = (int) strtol(argument2, NULL, 16);
+	            switch(opbyte){
+	                    
+					case 0x06:                                  //RLC (IX+d) / RLC (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("RLC (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0x0E:                                  //RRC (IX+d) / RRC (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("RRC (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0x16:                                  //RL (IX+d) / RL (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("RL (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0x1E:                                  //RR (IX+d) / RR (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");    
+                        completeNewSwitch("RR (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                    	return buffer;
+                    case 0x26:                                  //SLA (IX+d) / SLA (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("SLA (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+					case 0x2E:                                  //SRA (IX+d) / SRA (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("SRA (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0x36:                                  //SLS (IX+d) / SRA (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("SLS (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+					case 0x3E:                                  //SRL (IX+d) / SRA (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("SRL (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0x46:                                  //BIT 0, (IX+d) / BIT 0, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("BIT 0, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0x4E:                                  //BIT  1, (IX+d) / BIT 1, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("BIT 1, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0x56:                                  //BIT 2,(IX+d) / BIT 2, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("BIT 2, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0x5E:                                  //BIT 3,(IX+d) / BIT 3, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("BIT 3, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0x66:                                  //BIT 4, (IX+d) / BIT 4, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("BIT 4, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0x6E:                                  //BIT 5, IX+d) / BIT 5, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("BIT 5, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0x76:                                  //BIT 6, (IX+d) / BIT 6, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("BIT 6, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0x7E:                                  //BIT 7, (IX+d) / BIT 7, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("BIT 7, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0x86:                                  //RES  0, (IX+d) / RES 0, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("RES 0, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0x8E:                                  //RES 1, (IX+d) / RES 1, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("RES 1, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0x96:                                  //RES 2, (IX+d) / RES 2, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("RES 2, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0x9E:                                  //RES 3, (IX+d) / RES 3, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("RES 3, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0xA6:                                  //RES 4, (IX+d) / RES 4, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("RES 4, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0xAE:                                  //RES 5, (IX+d) / RES 5, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("RES 5, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0xB6:                                  //RES 6,(IX+d) / RES 6, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("RES 6, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0xBE:                                  //RES 7,(IX+d) / RES 7, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("RES 7, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0xC6:                                  //SET 0, (IX+d) / SET 0, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("SET 0, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0xCE:                                  //SET 1, (IX+d) / SET 1, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("SET 1, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0xD6:                                  //SET 2, (IX+d) / SET 2, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("SET 2, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0xDE:                                  //SET 3, (IX+d) / SET 3, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("SET 3, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0xE6:                                  //SET 4, (IX+d) / SET 4, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("SET 4, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0xEE:                                  //SET 5, (IX+d) / SET 5, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("SET 5, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0xF6:                                  //SET 6, (IX+d) / SET 6, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("SET 6, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
+                    case 0xFE:                                  //SET 7, (IX+d) / SET 7, (IY+d)
+                        strcpy(argument2, "");
+                        strcat(ins, "+");
+                        completeNewSwitch("SET 7, (", ins, argument1, argument2);
+                        strcat(buffer, ")");
+                        return buffer;
 	                }
-
-                case 0x09:                                  //ADD  IX,BC
-                    return "ADD IX,BC";
-                case 0x19:                                  //ADD  IX,DE
-                    return "ADD IX,DE";
-                case 0x21:                                  //LD   IX, nn
-                    getByte(argument2, line);
-                    getByte(argument1, line);
-                    complete("LD IX, ", argument2, argument1);
-                    return buffer;
-                case 0x22:                                  //LD  (nn),IX
-                    getByte(argument2, line);
-                    getByte(argument1, line);
-                    complete("LD (", argument2, argument1);
-                    strcat(buffer, "), IX");
-                    return buffer;
-                case 0x23:                                  //INC  IX
-                    return "INC IX";
-                case 0x29:                                  //ADD  IX,IX
-                    return "ADD IX,IX";
-                case 0x2A:                                  //LD  IX,(nn)
-                    getByte(argument2, line);
-                    getByte(argument1, line);
-                    complete("LD IX, (", argument2, argument1);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x2B:                                  //DEC  IX
-                    return "DEC IX";
-                case 0x34:                                  //INC  (IX+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("INC (IX+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x35:                                  //DEC  (IX+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("DEC (IX+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x36:                                  //LD  (IX+d), n
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD (IX+", argument1, argument2);
-                    strcat(buffer, "), ");
-                    getByte(argument1, line);
-                    strcat(buffer, argument1);
-                    return buffer;
-                case 0x46:                                  //LD   B,(IX+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD B, (IX+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x4E:                                  //LD   C,(IX+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD C, (IX+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x56:                                  //LD   D,(IX+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD D, (IX+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x5E:                                  //LD   E,(IX+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD E, (IX+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x66:                                  //LD   H,(IX+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD H, (IX+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x6E:                                  //LD   L,(IX+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD L, (IX+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x70:                                  //LD   (IX+d),B
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD (IX+", argument1, argument2);
-                    strcat(buffer, "), B");
-                    return buffer;
-                case 0x71:                                  //LD   (IX+d),C
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD (IX+", argument1, argument2);
-                    strcat(buffer, "), C");
-                    return buffer;
-                case 0x72:                                  //LD   (IX+d),D
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD (IX+", argument1, argument2);
-                    strcat(buffer, "), D");
-                    return buffer;
-                case 0x73:                                  //LD   (IX+d),E
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD (IX+", argument1, argument2);
-                    strcat(buffer, "), E");
-                    return buffer;
-                case 0x74:                                  //LD   (IX+d),H
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD (IX+", argument1, argument2);
-                    strcat(buffer, "), H");
-                    return buffer;
-                case 0x75:                                  //LD   (IX+d),L
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD (IX+", argument1, argument2);
-                    strcat(buffer, "), L");
-                    return buffer;
-                case 0x77:                                  //LD   (IX+d),A
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD (IX+", argument1, argument2);
-                    strcat(buffer, "), A");
-                    return buffer;
-                case 0x7E:                                  //LD   A,(IX+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD A, (IX+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x86:                                  //ADD  A,(IX+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("ADD A, (IX+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x8E:                                  //ADC  A,(IX+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("ADC A, (IX+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x96:                                  //SUB  A,(IX+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("SUB A, (IX+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x9E:                                  //SBC  A,(IX+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("SBC A, (IX+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0xA6:                                  //AND  (IX+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("AND (IX+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0xAE:                                  //XOR  (IX+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("XOR (IX+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0xB6:                                  //OR   (IX+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("OR (IX+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0xBE:                                  //CP   (IX+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("CP (IX+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0xE1:                                  //POP  IX
-                    return "POP IX";
-                case 0xE3:                                  //EX   (SP),IX
-                    return "EX (SP),IX";
-                case 0xE5:                                  //PUSH IX
-                    return "PUSH IX";
-                case 0xE9:                                  //JP   (IX)
-                    return "JP (IX)";
-				default:
-					printf("Error: formato incorrecto");
-					return "ERROR";
+            case 0x09:                                  //ADD IX, BC / ADD IY, BC
+            	strcpy(buffer, "ADD ");
+            	strcat(buffer, ins);
+            	strcat(buffer, ", BC");
+                return buffer;
+            case 0x19:                                  //ADD IX, DE / ADD IY, DE
+            	strcpy(buffer, "ADD ");
+            	strcat(buffer, ins);
+            	strcat(buffer, ", DE");
+                return buffer;
+            case 0x21:                                  //LD IX, nn / LD IY, nn
+                getByte(argument2, line);
+                getByte(argument1, line);
+                strcat(ins, ", ");
+                completeNewSwitch("LD ", ins, argument2, argument1);
+                return buffer;
+            case 0x22:                                  //LD (nn), IX / LD (nn), IY
+                getByte(argument2, line);
+                getByte(argument1, line);
+                complete("LD (", argument2, argument1);
+                strcat(buffer, "), ");
+                strcat(buffer, ins);
+                return buffer;
+            case 0x23:                                  //INC IX / INC IY
+                strcpy(buffer, "INC ");
+                strcat(buffer, ins);
+                return buffer;
+            case 0x29:                                  //ADD IX, IX / ADD IY, IY
+                strcpy(buffer, "ADD ");
+                strcat(buffer, ins);
+                strcat(buffer, ", ");
+                strcat(buffer, ins);
+                return buffer;
+            case 0x2A:                                  //LD IX, (nn) / LD IY, (nn)
+                getByte(argument2, line);
+                getByte(argument1, line);
+                strcat(ins, ", (");
+                completeNewSwitch("LD ", ins, argument2, argument1);
+                strcat(buffer, ")");
+                return buffer;
+            case 0x2B:                                  //DEC IX, DEC IY
+            	strcpy(buffer, "DEC ");
+            	strcat(buffer, ins);
+                return buffer;
+            case 0x34:                                  //INC (IX+d) / INC (IY+d)
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("INC (", ins, argument1, argument2);
+                strcat(buffer, ")");
+                return buffer;
+            case 0x35:                                  //DEC (IX+d) / DEC (IY+d)
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("DEC (", ins, argument1, argument2);
+                strcat(buffer, ")");
+                return buffer;
+            case 0x36:                                  //LD (IX+d), n / LD (IY+d), n
+                getByte(argument1, line);
+                getByte(argument2, line);
+                strcat(ins, "+");
+                strcat(ins, argument1);
+                strcat(ins, "), ");
+                strcat(ins, argument2);
+                strcpy(buffer, "LD (");
+                strcat(buffer, ins);
+                return buffer;
+            case 0x46:                                  //LD B, (IX+d) / LD B, (IY+d)
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("LD B, (", ins, argument1, argument2);
+                strcat(buffer, ")");
+                return buffer;
+            case 0x4E:                                  //LD C, (IX+d) / LD C, (IY+d)
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("LD C, (", ins, argument1, argument2);
+                strcat(buffer, ")");
+                return buffer;
+            case 0x56:                                  //LD D, (IX+d) / LD D, (IY+d)
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("LD D, (", ins, argument1, argument2);
+                strcat(buffer, ")");
+                return buffer;
+            case 0x5E:                                  //LD E, (IX+d) / LD E, (IY+d)
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("LD E, (", ins, argument1, argument2);
+                strcat(buffer, ")");
+                return buffer;
+            case 0x66:                                  //LD H, (IX+d) / LD H, (IY+d)
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("LD H, (", ins, argument1, argument2);
+                strcat(buffer, ")");
+                return buffer;
+            case 0x6E:                                  //LD L, (IX+d) / LD L, (IY+d)
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("LD H, (", ins, argument1, argument2);
+                strcat(buffer, ")");
+                return buffer;
+            case 0x70:                                  //LD (IX+d), B / LD (IY+d), B
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("LD (", ins, argument1, argument2);
+                strcat(buffer, "), B");
+                return buffer;
+            case 0x71:                                  //LD (IX+d), C / LD (IY+d), C
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("LD (", ins, argument1, argument2);
+                strcat(buffer, "), C");
+                return buffer;
+            case 0x72:                                  //LD (IX+d), D / LD (IY+d), D
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("LD (", ins, argument1, argument2);
+                strcat(buffer, "), D");
+                return buffer;
+            case 0x73:                                  //LD (IX+d), E / LD (IY+d), E
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("LD (", ins, argument1, argument2);
+                strcat(buffer, "), E");
+                return buffer;
+            case 0x74:                                  //LD (IX+d), H / LD (IY+d), H
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("LD (", ins, argument1, argument2);
+                strcat(buffer, "), E");
+                return buffer;
+            case 0x75:                                  //LD (IX+d), L / LD (IY+d), L
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("LD (", ins, argument1, argument2);
+                strcat(buffer, "), L");
+                return buffer;
+            case 0x77:                                  //LD (IX+d), A / LD (IY+d), A
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("LD (", ins, argument1, argument2);
+                strcat(buffer, "), A");
+                return buffer;
+            case 0x7E:                                  //LD A, (IX+d) / LD A, (IY+d)
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("LD A, (", ins, argument1, argument2);
+                strcat(buffer, ")");
+                return buffer;
+            case 0x86:                                  //ADD A, (IX+d) / ADD A, (IY+d)
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("ADD A, (", ins, argument1, argument2);
+                strcat(buffer, ")");
+                return buffer;
+            case 0x8E:                                  //ADC A, (IX+d) / ADC A, (IY+d)
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("ADC A, (", ins, argument1, argument2);
+                strcat(buffer, ")");
+                return buffer;
+            case 0x96:                                  //SUB A, (IX+d) / SUB A, (IY+d)
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("SUB A, (", ins, argument1, argument2);
+                strcat(buffer, ")");
+                return buffer;
+            case 0x9E:                                  //SBC A, (IX+d) / SBC A, (IY+d)
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("SBC A, (", ins, argument1, argument2);
+                strcat(buffer, ")");
+                return buffer;
+            case 0xA6:                                  //AND (IX+d) / AND (IY+d)
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("AND (", ins, argument1, argument2);
+                strcat(buffer, ")");
+                return buffer;
+            case 0xAE:                                  //XOR (IX+d) / XOR (IY+d)
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("XOR (", ins, argument1, argument2);
+                strcat(buffer, ")");
+                return buffer;
+            case 0xB6:                                   //OR (IX+d) / OR (IY+d)
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("OR (", ins, argument1, argument2);
+                strcat(buffer, ")");
+                return buffer;
+            case 0xBE:                                  //CP (IX+d) / CP (IY+d)
+                getByte(argument1, line);
+                strcpy(argument2, "");
+                strcat(ins, "+");
+                completeNewSwitch("CP (", ins, argument1, argument2);
+                strcat(buffer, ")");
+                return buffer;
+            case 0xE1:                                  //POP IX / POP IY
+                strcpy(buffer, "POP ");
+                strcat(buffer, ins);
+				return buffer;
+            case 0xE3:                                  //EX (SP), IX / EX (SP), IY
+                strcpy(buffer, "EX (SP), ");
+                strcat(buffer, ins);
+				return buffer;
+            case 0xE5:                                  //PUSH IX / PUSH IY
+                strcpy(buffer, "PUSH ");
+                strcat(buffer, ins);
+				return buffer;
+            case 0xE9:                                  //JP (IX) / JP (IY)
+                strcpy(buffer, "JP (");
+                strcat(buffer, ins);
+                strcat(buffer, ")");
+				return buffer;
 	        }
-        
-        case 0xFD:
-            switch(nextbyte){
-
-	            case 0xCB:
-	                getByte(argument1, line);
-	                getByte(argument2, line);
-                    opbyte = (int) strtol(argument2, NULL, 16);
-	                switch(opbyte){
-
-	                    case 0x06:                                  //RLC  (IY+d)
-                            strcpy(argument2, "");
-                            attach("RLC (IY+", argument1, argument2);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x0E:                                  //RRC  (IY+d)
-                            strcpy(argument2, "");
-                            attach("RRC (IY+", argument1, argument2);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x16:                                  //RL   (IY+d)
-                            strcpy(argument2, "");
-                            attach("RL (IY+", argument1, argument2);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x1E:                                  //RR   (IY+d)
-                            strcpy(argument2, "");
-                            attach("RR (IY+", argument1, argument2);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x26:                                  //SLA  (IY+d)
-                            strcpy(argument2, "");
-                            attach("SLA (IY+", argument1, argument2);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x2E:                                  //SRA  (IY+d)
-                            strcpy(argument2, "");
-                            attach("SRA (IY+", argument1, argument2);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x3E:                                  //SRL  (IY+d)
-                            strcpy(argument2, "");
-                            attach("SRL (IY+", argument1, argument2);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x46:                                  //BIT  0,(IY+d)
-                            attach("BIT ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x4E:                                  //BIT  1,(IY+d)
-                            attach("BIT ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x56:                                  //BIT  2,(IY+d)
-                            attach("BIT ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x5E:                                  //BIT  3,(IY+d)
-                            attach("BIT ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x66:                                  //BIT  4,(IY+d)
-                            attach("BIT ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x6E:                                  //BIT  5,(IY+d)
-                            attach("BIT ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x76:                                  //BIT  6,(IY+d)
-                            attach("BIT ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x7E:                                  //BIT  7,(IY+d)
-                            attach("BIT ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x86:                                  //RES  0,(IY+d)
-                            attach("RES ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x8E:                                  //RES  1,(IY+d)
-                            attach("RES ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x96:                                  //RES  2,(IY+d)
-                            attach("RES ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0x9E:                                  //RES  3,(IY+d)
-                            attach("RES ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xA6:                                  //RES  4,(IY+d)
-                            attach("RES ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xAE:                                  //RES  5,(IY+d)
-                            attach("RES ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xB6:                                  //RES  6,(IY+d)
-                            attach("RES ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xBE:                                  //RES  7,(IY+d)
-                            attach("RES ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xC6:                                  //SET  0,(IY+d)
-                            attach("SET ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xCE:                                  //SET  1,(IY+d)
-                            attach("SET ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xD6:                                  //SET  2,(IY+d)
-                            attach("SET ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xDE:                                  //SET  3,(IY+d)
-                            attach("SET ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xE6:                                  //SET  4,(IY+d)
-                            attach("SET ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xEE:                                  //SET  5,(IY+d)
-                            attach("SET ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xF6:                                  //SET  6,(IY+d)
-                            attach("SET ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-                        case 0xFE:                                  //SET  7,(IY+d)
-                            attach("SET ", argument2, "");
-                            strcat(buffer, ", (IY+");
-                            strcat(buffer, argument1);
-                            strcat(buffer, ")");
-                            return buffer;
-						default:
-							printf("Error: formato incorrecto");
-							return "ERROR";
-	                }
-
-                case 0x09:                                  //ADD  IY,BC
-                    return "ADD IY,BC";
-                case 0x19:                                  //ADD  IY,DE
-                    return "ADD IY,DE";
-                case 0x21:                                  //LD   IY, nn
-                    getByte(argument2, line);
-                    getByte(argument1, line);
-                    complete("LD IY, ", argument2, argument1);
-                    return buffer;
-                case 0x22:                                  //LD  (nn),IY
-                    getByte(argument2, line);
-                    getByte(argument1, line);
-                    complete("LD (", argument2, argument1);
-                    strcat(buffer, "), IY");
-                    return buffer;
-                case 0x23:                                  //INC  IY
-                    return "INC IY";
-                case 0x29:                                  //ADD  IY,IY
-                    return "ADD IY,IY";
-                case 0x2A:                                  //LD  IY,(nn)
-                    getByte(argument2, line);
-                    getByte(argument1, line);
-                    complete("LD IY, (", argument2, argument1);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x2B:                                  //DEC  IY
-                    return "DEC IY";
-                case 0x34:                                  //INC  (IY+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("INC (IY+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x35:                                  //DEC  (IY+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("DEC (IY+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x36:                                  //LD  (IY+d), n
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD (IY+", argument1, argument2);
-                    strcat(buffer, "), ");
-                    getByte(argument1, line);
-                    strcat(buffer, argument1);
-                    return buffer;
-                case 0x46:                                  //LD   B,(IY+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD B, (IY+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x4E:                                  //LD   C,(IY+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD C, (IY+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x56:                                  //LD   D,(IY+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD D, (IY+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x5E:                                  //LD   E,(IY+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD E, (IY+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x66:                                  //LD   H,(IY+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD H, (IY+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x6E:                                  //LD   L,(IY+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD L, (IY+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x70:                                  //LD   (IY+d),B
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD (IY+", argument1, argument2);
-                    strcat(buffer, "), B");
-                    return buffer;
-                case 0x71:                                  //LD   (IY+d),C
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD (IY+", argument1, argument2);
-                    strcat(buffer, "), C");
-                    return buffer;
-                case 0x72:                                  //LD   (IY+d),D
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD (IY+", argument1, argument2);
-                    strcat(buffer, "), D");
-                    return buffer;
-                case 0x73:                                  //LD   (IY+d),E
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD (IY+", argument1, argument2);
-                    strcat(buffer, "), E");
-                    return buffer;
-                case 0x74:                                  //LD   (IY+d),H
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD (IY+", argument1, argument2);
-                    strcat(buffer, "), H");
-                    return buffer;
-                case 0x75:                                  //LD   (IY+d),L
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD (IY+", argument1, argument2);
-                    strcat(buffer, "), L");
-                    return buffer;
-                case 0x77:                                  //LD   (IY+d),A
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD (IY+", argument1, argument2);
-                    strcat(buffer, "), A");
-                    return buffer;
-                case 0x7E:                                  //LD   A,(IY+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("LD A, (IY+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x86:                                  //ADD  A,(IY+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("ADD A, (IY+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x8E:                                  //ADC  A,(IY+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("ADC A, (IY+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x96:                                  //SUB  A,(IY+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("SUB A, (IY+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0x9E:                                  //SBC  A,(IY+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("SBC A, (IY+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0xA6:                                  //AND  (IY+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("AND (IY+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0xAE:                                  //XOR  (IY+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("XOR (IY+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0xB6:                                  //OR   (IY+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("OR (IY+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0xBE:                                  //CP   (IY+d)
-                    getByte(argument1, line);
-                    strcpy(argument2, "");
-                    attach("CP (IY+", argument1, argument2);
-                    strcat(buffer, ")");
-                    return buffer;
-                case 0xE1:                                  //POP  IY
-                    return "POP IY";
-                case 0xE3:                                  //EX   (SP),IY
-                    return "EX (SP),IY";
-                case 0xE5:                                  //PUSH IY
-                    return "PUSH IY";
-                case 0xE9:                                  //JP   (IY)
-                    return "JP (IY)";
-				default:
-					printf("Error: formato incorrecto");
-					return "ERROR";
-	        }
-		default:
-			printf("Error: formato incorrecto");
-			return "ERROR";
-	}
+    return "";
 }
 
 char * getInstruction(int opcode, char line[], char byte[]) {
@@ -2008,9 +1682,8 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 			// funcion getEti()
 			return "Incompleto";
 		case 0xDD:									//  ** DD **
-			getByte(argument1, line);
-		    nextbyte = (int) strtol(argument1, NULL, 16);
-			return newSwitch(opcode, line, nextbyte);
+			strcpy(argument1, "IX");
+			return newSwitch(line, argument1);
 		case 0xDE:									//  SBC A, n
 			getByte(argument1, line);
 			strcpy(argument2, "");
@@ -2341,9 +2014,8 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 			// funcion getEti()
 			return "Incompleto";
 		case 0xFD:									//  ** FD **
-			getByte(argument1, line);
-		    nextbyte = (int) strtol(argument1, NULL, 16);
-			return newSwitch(opcode, line, nextbyte);
+			strcpy(argument1, "IY");
+			return newSwitch(line, argument1);
 		case 0xFE:									//  CP n
 			getByte(argument1, line);
 			strcpy(argument2, "");
