@@ -63,7 +63,7 @@ int main(int argvc, char **argv) {
 
 
 char *getEti_p(uint16_t cl){
-    int index = 0;
+    int index = 1;
 	char aux[12];	//Todos los números enteros caben en un arreglo de 12 carcateres
     while (symbols[index] != 0x0000 && index < 100){
         if (cl == symbols[index]){
@@ -72,11 +72,10 @@ char *getEti_p(uint16_t cl){
 			strcat(eti, aux);
 			return eti;
 		}
-        i++;
+        index++;
         
     }
 	if(index < 100){
-		index = index;
 		symbols[index] = cl;
 		strcpy(eti, "ETI");
 		sprintf(aux, "%d", index);
@@ -1074,11 +1073,25 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0xC1:									//  POP BC
 			return "POP BC";
 		case 0xC2: 									//  JP NZ, e
-			// funcion getEti()
-			return "Incompleto";
+			getByte(argument2, line);
+            getByte(argument1, line);
+			strcpy(buffer, argument2);
+			strcat(buffer, argument1);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+            strcpy (name, getEti_p(cl));
+			strcpy(buffer, "JP NZ, ");
+            strcat(buffer, eti);
+            return buffer;
 		case 0xC3:									//  JP e
-			// funcion getEti()
-			return "Incompleto";
+			getByte(argument2, line);
+            getByte(argument1, line);
+			strcpy(buffer, argument2);
+			strcat(buffer, argument1);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+            strcpy (name, getEti_p(cl));
+			strcpy(buffer, "JP ");
+            strcat(buffer, eti);
+            return buffer;
 		case 0xC4:									//  CALL NZ, e
 			//funcion getEti()
 			return "Incompleto";
@@ -1645,8 +1658,15 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0xD1:									//  POP DE
 			return "POP DE";
 		case 0xD2: 									//  JP NC, e
-			// funcion getEti()
-			return "Incompleto";
+			getByte(argument2, line);
+            getByte(argument1, line);
+			strcpy(buffer, argument2);
+			strcat(buffer, argument1);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+            strcpy (name, getEti_p(cl));
+			strcpy(buffer, "JP NC, ");
+            strcat(buffer, eti);
+            return buffer;
 		case 0xD3:									//  OUT (n), A
 			getByte(argument1, line);
 			strcpy(argument2, "");
@@ -1670,8 +1690,15 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0xD9:									//  EXX
 			return "EXX";
 		case 0xDA:									//  JP C, e
-			// funcion getEti()
-			return "Incompleto";
+			getByte(argument2, line);
+            getByte(argument1, line);
+			strcpy(buffer, argument2);
+			strcat(buffer, argument1);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+            strcpy (name, getEti_p(cl));
+			strcpy(buffer, "JP C, ");
+            strcat(buffer, eti);
+            return buffer;			
 		case 0xDB:									//  IN A, (n)
 			getByte(argument1, line);
 			strcpy(argument2, "");
@@ -1696,8 +1723,15 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0xE1:									//  POP HL
 			return "POP HL";
 		case 0xE2: 									//  JP PO, e
-			// funcion getEti()
-			return "Incompleto";
+			getByte(argument2, line);
+            getByte(argument1, line);
+			strcpy(buffer, argument2);
+			strcat(buffer, argument1);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+            strcpy (name, getEti_p(cl));
+			strcpy(buffer, "JP Z, ");
+            strcat(buffer, eti);
+            return buffer;
 		case 0xE3:									//  EX (SP), HL
 			return "EX (SP), HL";
 		case 0xE4:									//  CALL PO, e
@@ -1717,8 +1751,15 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0xE9:									//  JP (HL)
 			return "JP (HL)";
 		case 0xEA:									//  JP PE, e
-			// funcion getEti()
-			return "Incompleto";
+			getByte(argument2, line);
+            getByte(argument1, line);
+			strcpy(buffer, argument2);
+			strcat(buffer, argument1);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+            strcpy (name, getEti_p(cl));
+			strcpy(buffer, "JP PE, ");
+            strcat(buffer, eti);
+            return buffer;
 		case 0xEB:									//  EX DE, HL
 			return "EX DE, HL";
 		case 0xEC:									//  CALL PE, e
@@ -1985,8 +2026,15 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0xF1:									//  POP AF
 			return "POP AF";
 		case 0xF2: 									//  JP P, e
-			// funcion getEti()
-			return "Incompleto";
+			getByte(argument2, line);
+            getByte(argument1, line);
+			strcpy(buffer, argument2);
+			strcat(buffer, argument1);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+            strcpy (name, getEti_p(cl));
+			strcpy(buffer, "JP P, ");
+            strcat(buffer, eti);
+            return buffer;
 		case 0xF3:									//  DI
 			return "DI";
 		case 0xF4:									//  CALL P, e
@@ -2006,8 +2054,15 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0xF9:									//  LD SP, HL
 			return "LD SP, HL";
 		case 0xFA:									//  JP M, e
-			// funcion getEti()
-			return "Incompleto";
+			getByte(argument2, line);
+            getByte(argument1, line);
+			strcpy(buffer, argument2);
+			strcat(buffer, argument1);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+            strcpy (name, getEti_p(cl));
+			strcpy(buffer, "JP M, ");
+            strcat(buffer, eti);
+            return buffer;
 		case 0xFB:									//  EI
 			return "EI";
 		case 0xFC:									//  CALL M, e
