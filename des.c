@@ -20,7 +20,7 @@ uint16_t symbols[100];		//Tabla de simbolos
 uint16_t cl;				//Contador de localidades asociado a las etiquetas
 char eti[6];				//Nombres de las etiquetas
 
-
+//test
 
 int main(int argvc, char **argv) {
 	int num_lines;  // num_lines guardar� la cantidad de lineas del archivo, i es contador
