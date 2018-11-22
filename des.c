@@ -10,11 +10,10 @@ void completeNewSwitch(const char *, char[], char [], char []);
 char *newSwitch(char [], char []);
 int countLines(char *);
 char *getLines(char *, int);
-char *getEti_r(char []);
 char *getEti_p(uint16_t);
 
 int i;  					//contador
-int num_total_bytes = 0; 	// numero total de bytes que abarca el programa
+int num_total_bytes = 0; 	//numero total de bytes que abarca el programa
 char buffer[20];  			//almacenamiento temporal para retorno en getInstruction
 uint16_t symbols[100];		//Tabla de simbolos
 uint16_t cl;				//Contador de localidades asociado a las etiquetas
@@ -27,6 +26,7 @@ int main(int argvc, char **argv) {
 	int opcode;  // guardara un byte en base 10
 	char byte[3]; // almacena un byte individual
 	char *mnemonico; //almacena la instruccion completa
+	int aux;		//auxiliar para calcular contador de localidades
     uint16_t CL_n = 0x0000;
     uint16_t CL_p = 0x0000;
 
@@ -38,9 +38,6 @@ int main(int argvc, char **argv) {
 	char *temp = getLines("test.txt", num_lines);
 	strcpy(total_bytes, temp);
 	free(temp); // se libera memoria asignada dentro de la funcion getLines()
-
-    int aux;
-    int num_of_eti = 0;
 
 	for(i = 0; i < 100; i++){			//Se inicializa tabla de simbolos
 		symbols[i] = 0x0000;
@@ -54,7 +51,7 @@ int main(int argvc, char **argv) {
 		mnemonico = getInstruction(opcode, total_bytes, byte);
         aux = (i - aux)/2;
         CL_n = CL_n + aux;
-        printf("%i\t", CL_p);
+        printf("%X\t", CL_p);
 		printf("%s\n", mnemonico);
 	}
 		
@@ -65,31 +62,25 @@ int main(int argvc, char **argv) {
 char *getEti_p(uint16_t cl){
     int index = 1;
 	char aux[12];	//Todos los números enteros caben en un arreglo de 12 carcateres
-    while (symbols[index] != 0x0000 && index < 100){
-        if (cl == symbols[index]){
+    while (symbols[index] != 0x0000 && index < 100){	//Busca por etiquetas ya definidas
+        if (cl == symbols[index]){		//Si lo encuentra
 			strcpy(eti, "ETI");
-			sprintf(aux, "%d", index); //Se copia el arreglo de caracteres en un arreglo
-			strcat(eti, aux);
+			sprintf(aux, "%d", index); 	//Se copia el entero en un arreglo
+			strcat(eti, aux);			//Se concatena el entero con la palabra ETI
 			return eti;
 		}
         index++;
         
     }
-	if(index < 100){
+	if(index < 100){			//Agrega etiquetas no definidas
 		symbols[index] = cl;
 		strcpy(eti, "ETI");
 		sprintf(aux, "%d", index);
 		strcat(eti, aux);
 		return eti;
 	}else
-	return "ERROR";
+	return "ERROR";				//Algún error
 }
-
-char *getEti_r(char argument1[]){
-    return "ETI1";
-}
-
-
 
 void getByte(char argument[], char line[]){
 	argument[0] = line[i];
@@ -122,7 +113,7 @@ char * getLines(char * filename, int num_lines){
         puts("Unable to open the file");
     }
 	else{
-		char line[45], byte[3];
+		char line[46], byte[3];
 		char *total_bytes = malloc((num_lines*32)*sizeof(char));
 		int k,j, dbytes_in_line;
 		int index = 0;
@@ -153,7 +144,7 @@ void complete(const char *arg1, char arg2[], char arg3[]){  // junta primera par
 }
 
 void completeNewSwitch(const char *arg1, char option[], char arg2[], char arg3[]){
-	//junta primera parte de mnemonico con IX o IY, luego con n o nn, inserta H al final
+	//junta primera parte de mnemonico con IX o IY, luego con n, inserta H al final
 	char aux[20];
 	strcpy(aux, arg1);
 	strcat(aux, option);
