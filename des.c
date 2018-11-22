@@ -13,17 +13,16 @@ char *getLines(char *, int);
 char *getEti_r(char []);
 char *getEti_p(uint16_t);
 
-int i;  					//contador
-int num_total_bytes = 0; 	// numero total de bytes que abarca el programa
-char buffer[20];  			//almacenamiento temporal para retorno en getInstruction
-uint16_t symbols[100];		//Tabla de simbolos
-uint16_t cl;				//Contador de localidades asociado a las etiquetas
-char eti[6];				//Nombres de las etiquetas
+int i;  					   //contador
+int num_total_bytes = 0; 	   // numero total de bytes que abarca el programa
+char buffer[20];  			   //almacenamiento temporal para retorno en getInstruction
+uint16_t symbols[100] = {0};   //Tabla de simbolos
+uint16_t cl;				   //Contador de localidades asociado a las etiquetas
+char eti[6];				   //Nombres de las etiquetas
 
-//test
 
 int main(int argvc, char **argv) {
-	int num_lines;  // num_lines guardar� la cantidad de lineas del archivo, i es contador
+	int num_lines;  // num_lines guardara la cantidad de lineas del archivo
 	int opcode;  // guardara un byte en base 10
 	char byte[3]; // almacena un byte individual
 	char *mnemonico; //almacena la instruccion completa
@@ -41,10 +40,6 @@ int main(int argvc, char **argv) {
 
     int aux;
     int num_of_eti = 0;
-
-	for(i = 0; i < 100; i++){			//Se inicializa tabla de simbolos
-		symbols[i] = 0x0000;
-	}
 
 	for(i = 0; i < num_total_bytes*2;){
         aux = i;
@@ -64,7 +59,7 @@ int main(int argvc, char **argv) {
 
 char *getEti_p(uint16_t cl){
     int index = 1;
-	char aux[12];	//Todos los números enteros caben en un arreglo de 12 carcateres
+	char aux[12];	//Todos los numeros enteros caben en un arreglo de 12 carcateres
     while (symbols[index] != 0x0000 && index < 100){
         if (cl == symbols[index]){
 			strcpy(eti, "ETI");
