@@ -12,22 +12,14 @@ int countLines(char *);
 char *getLines(char *, int);
 char *getEti_p(uint16_t);
 
-<<<<<<< HEAD
-int i;  					//contador
-int num_total_bytes = 0; 	//numero total de bytes que abarca el programa
-char buffer[20];  			//almacenamiento temporal para retorno en getInstruction
-uint16_t symbols[100];		//Tabla de simbolos
-uint16_t cl;				//Contador de localidades asociado a las etiquetas
-char eti[6];				//Nombres de las etiquetas
 
-=======
 int i;  					   //contador
 int num_total_bytes = 0; 	   // numero total de bytes que abarca el programa
 char buffer[20];  			   //almacenamiento temporal para retorno en getInstruction
 uint16_t symbols[100] = {0};   //Tabla de simbolos
 uint16_t cl;				   //Contador de localidades asociado a las etiquetas
 char eti[6];				   //Nombres de las etiquetas
->>>>>>> e11e252f189699740a2c2243b856b7873120a902
+
 
 
 int main(int argvc, char **argv) {
@@ -48,14 +40,8 @@ int main(int argvc, char **argv) {
 	strcpy(total_bytes, temp);
 	free(temp); // se libera memoria asignada dentro de la funcion getLines()
 
-<<<<<<< HEAD
-	for(i = 0; i < 100; i++){			//Se inicializa tabla de simbolos
-		symbols[i] = 0x0000;
-	}
-=======
-    int aux;
     int num_of_eti = 0;
->>>>>>> e11e252f189699740a2c2243b856b7873120a902
+
 
 	for(i = 0; i < num_total_bytes*2;){
         aux = i;
