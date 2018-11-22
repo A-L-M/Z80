@@ -16,10 +16,10 @@ char *getEti_p(uint16_t);
 int i;  					   //contador
 int num_total_bytes = 0; 	   // numero total de bytes que abarca el programa
 char buffer[20];  			   //almacenamiento temporal para retorno en getInstruction
-uint16_t symbols[100] = {0};   //Tabla de simbolos
+uint16_t symbols[1000] = {0x0000};   //Tabla de simbolos
 uint16_t cl;				   //Contador de localidades asociado a las etiquetas
 char eti[6];				   //Nombres de las etiquetas
-
+int eti_counter = 1;
 
 
 int main(int argvc, char **argv) {
@@ -41,20 +41,47 @@ int main(int argvc, char **argv) {
 	free(temp); // se libera memoria asignada dentro de la funcion getLines()
 
     int num_of_eti = 0;
+    uint16_t CL_global[1000] = {0x0000}; //Aquí guarda el contador de localidades de cada línea. 
+    int line_counter = 1; //Ayuda a generar el arreglo con todos los valores del contador de localodades. 
 
 
 	for(i = 0; i < num_total_bytes*2;){
         aux = i;
         CL_p = CL_n;
+        CL_global[line_counter] = CL_n; //Se guarda el contador de localidades en el arreglo 
 		getByte(byte, total_bytes);
 		opcode = (int) strtol(byte, NULL, 16);
 		mnemonico = getInstruction(opcode, total_bytes, byte);
         aux = (i - aux)/2;
         CL_n = CL_n + aux;
+    
         printf("%X\t", CL_p);
 		printf("%s\n", mnemonico);
+
+        line_counter++;
 	}
-		
+	
+    
+    char eti_aux[12]; //Buffer para generar etiquetas. 
+    /*
+    
+    ESTA PARTE IMPRIME LA DIRECCIÓN A LA QUE APUNTAN LAS ETIQUETAS.
+
+    -- ESTO SE DEBE IMPRIMIR EN EL ARCHIVO ASM
+
+    */
+        
+    for(int c = 1; c < eti_counter; c++) // Recorre la tabla de simbolos para encontrar las direcciones a las que apuntan las etiquetas
+        for (int b = 1; b < line_counter; b++) //Recorre el arreglo del contador de localidades. 
+            if(symbols[c] == CL_global[b]){
+                strcpy(eti, "ETI");
+                sprintf(eti_aux, "%d", c);  //Se copia el entero en un arreglo
+                strcat(eti, eti_aux);           //Se concatena el entero con la palabra ETI
+                printf("%s\t", eti);
+                printf("%X\n", symbols[c]);
+            }
+    
+
     return EXIT_SUCCESS;
 }
 
@@ -77,6 +104,7 @@ char *getEti_p(uint16_t cl){
 		strcpy(eti, "ETI");
 		sprintf(aux, "%d", index);
 		strcat(eti, aux);
+        eti_counter++;
 		return eti;
 	}else
 	return "ERROR";				//Algún error
@@ -1066,8 +1094,8 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0xC2: 									//  JP NZ, e
 			getByte(argument2, line);
             getByte(argument1, line);
-			strcpy(buffer, argument2);
-			strcat(buffer, argument1);
+			strcpy(buffer, argument1);
+			strcat(buffer, argument2);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
             strcpy (name, getEti_p(cl));
 			strcpy(buffer, "JP NZ, ");
@@ -1076,8 +1104,8 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0xC3:									//  JP e
 			getByte(argument2, line);
             getByte(argument1, line);
-			strcpy(buffer, argument2);
-			strcat(buffer, argument1);
+			strcpy(buffer, argument1);
+			strcat(buffer, argument2);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
             strcpy (name, getEti_p(cl));
 			strcpy(buffer, "JP ");
@@ -1102,8 +1130,8 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0xCA:									//  JP Z, e
 			getByte(argument2, line);
             getByte(argument1, line);
-			strcpy(buffer, argument2);
-			strcat(buffer, argument1);
+			strcpy(buffer, argument1);
+			strcat(buffer, argument2);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
             strcpy (name, getEti_p(cl));
 			strcpy(buffer, "JP Z, ");
@@ -1651,8 +1679,8 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0xD2: 									//  JP NC, e
 			getByte(argument2, line);
             getByte(argument1, line);
-			strcpy(buffer, argument2);
-			strcat(buffer, argument1);
+			strcpy(buffer, argument1);
+			strcat(buffer, argument2);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
             strcpy (name, getEti_p(cl));
 			strcpy(buffer, "JP NC, ");
@@ -1683,8 +1711,8 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0xDA:									//  JP C, e
 			getByte(argument2, line);
             getByte(argument1, line);
-			strcpy(buffer, argument2);
-			strcat(buffer, argument1);
+			strcpy(buffer, argument1);
+			strcat(buffer, argument2);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
             strcpy (name, getEti_p(cl));
 			strcpy(buffer, "JP C, ");
@@ -1716,8 +1744,8 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0xE2: 									//  JP PO, e
 			getByte(argument2, line);
             getByte(argument1, line);
-			strcpy(buffer, argument2);
-			strcat(buffer, argument1);
+			strcpy(buffer, argument1);
+			strcat(buffer, argument2);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
             strcpy (name, getEti_p(cl));
 			strcpy(buffer, "JP Z, ");
@@ -1744,8 +1772,8 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0xEA:									//  JP PE, e
 			getByte(argument2, line);
             getByte(argument1, line);
-			strcpy(buffer, argument2);
-			strcat(buffer, argument1);
+			strcpy(buffer, argument1);
+			strcat(buffer, argument2);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
             strcpy (name, getEti_p(cl));
 			strcpy(buffer, "JP PE, ");
@@ -2047,8 +2075,8 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0xFA:									//  JP M, e
 			getByte(argument2, line);
             getByte(argument1, line);
-			strcpy(buffer, argument2);
-			strcat(buffer, argument1);
+			strcpy(buffer, argument1);
+			strcat(buffer, argument2);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
             strcpy (name, getEti_p(cl));
 			strcpy(buffer, "JP M, ");
