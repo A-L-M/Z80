@@ -24,6 +24,8 @@ int eti_counter = 1;
 
 int main(int argc, char **argv) {
     FILE *f1, *f2;  //archivo asm
+    char fileH[20]; //nombre archivo hex
+    char fileA[20]; //nombre archivo asm
 	int num_lines;  // num_lines guardara la cantidad de lineas del archivo
 	int opcode;  // guardara un byte en base 10
 	char byte[3]; // almacena un byte individual
@@ -33,12 +35,13 @@ int main(int argc, char **argv) {
     uint16_t CL_n = 0x0000;
     uint16_t CL_p = 0x0000;
 
-	num_lines = countLines("test.txt");  // countLines regresa el numero de lineas CON INSTRUCCIONES (no cuenta la ultima)
+    strcpy(fileH, argv[1]);
+	num_lines = countLines(fileH);  // countLines regresa el numero de lineas CON INSTRUCCIONES (no cuenta la ultima)
 
 	/*se crea un arreglo que almacenara todos los bytes que representan codigo de operacion del programa. Cada byte son 2 caracteres,
 	en una linea puede haber maximo 16 bytes, por el total de lineas: se tiene el tamano maximo que debe tener el arreglo*/
 	char total_bytes[(num_lines*32)+1];  // se suma uno para tener espacio para la copia de temp a total_bytes
-	char *temp = getLines("test.txt", num_lines);
+	char *temp = getLines(fileH, num_lines);
 	strcpy(total_bytes, temp);
 	free(temp); // se libera memoria asignada dentro de la funcion getLines()
 
@@ -46,7 +49,11 @@ int main(int argc, char **argv) {
     uint16_t CL_global[1000] = {0x0000}; //Aquí guarda el contador de localidades de cada línea.
     int line_counter = 1; //Ayuda a generar el arreglo con todos los valores del contador de localodades.
 
-    f1 = fopen("test.asm","w");
+    strcpy(fileA, fileH);
+    fileA[strlen(fileA)-3] = 'a';
+    fileA[strlen(fileA)-2] = 's';
+    fileA[strlen(fileA)-1] = 'm';
+    f1 = fopen(fileA,"w");
     if (f1 == NULL){
         puts("Unable to open the file");
         }
@@ -81,13 +88,13 @@ int main(int argc, char **argv) {
     /*
     for (int count = 1; count < eti_counter; count++)
     {
-    
+
         printf("%X\n", symbols[count]);
     }
 
     for (int count = 1; count < line_counter; count++)
     {
-        
+
         printf("%X\n", CL_global[count]);
     }
 
@@ -98,7 +105,7 @@ int main(int argc, char **argv) {
     int c, b;
     char line[46], space[3];
     strcpy(space,": ");
-    f1 = fopen("test.asm", "r+");
+    f1 = fopen(fileA, "r+");
     if (f1 == NULL){
         puts("Unable to open the file");
     }
