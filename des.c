@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 
-char *getInstruction(int, char[], char[]);
+char *getInstruction(int, char[], char[], uint16_t);
 void getByte(char [], char []);
 void complete(const char *, char [], char []);
 void completeNewSwitch(const char *, char[], char [], char []);
@@ -22,17 +22,19 @@ char eti[6];				   //Nombres de las etiquetas
 int eti_counter = 1;
 
 
-int main(int argvc, char **argv) {
+int main(int argc, char **argv) {
+    FILE *f1, *f2;  //archivo asm
 	int num_lines;  // num_lines guardara la cantidad de lineas del archivo
 	int opcode;  // guardara un byte en base 10
 	char byte[3]; // almacena un byte individual
 	char *mnemonico; //almacena la instruccion completa
 	int aux;		//auxiliar para calcular contador de localidades
+	int imn = 0;  //índice para escribir mnemonicos en archivo
     uint16_t CL_n = 0x0000;
     uint16_t CL_p = 0x0000;
 
 	num_lines = countLines("test.txt");  // countLines regresa el numero de lineas CON INSTRUCCIONES (no cuenta la ultima)
-	
+
 	/*se crea un arreglo que almacenara todos los bytes que representan codigo de operacion del programa. Cada byte son 2 caracteres,
 	en una linea puede haber maximo 16 bytes, por el total de lineas: se tiene el tamano maximo que debe tener el arreglo*/
 	char total_bytes[(num_lines*32)+1];  // se suma uno para tener espacio para la copia de temp a total_bytes
@@ -41,46 +43,107 @@ int main(int argvc, char **argv) {
 	free(temp); // se libera memoria asignada dentro de la funcion getLines()
 
     int num_of_eti = 0;
-    uint16_t CL_global[1000] = {0x0000}; //Aquí guarda el contador de localidades de cada línea. 
-    int line_counter = 1; //Ayuda a generar el arreglo con todos los valores del contador de localodades. 
+    uint16_t CL_global[1000] = {0x0000}; //Aquí guarda el contador de localidades de cada línea.
+    int line_counter = 1; //Ayuda a generar el arreglo con todos los valores del contador de localodades.
 
+    f1 = fopen("test.asm","w");
+    if (f1 == NULL){
+        puts("Unable to open the file");
+        }
+    else{
 
-	for(i = 0; i < num_total_bytes*2;){
-        aux = i;
-        CL_p = CL_n;
-        CL_global[line_counter] = CL_n; //Se guarda el contador de localidades en el arreglo 
-		getByte(byte, total_bytes);
-		opcode = (int) strtol(byte, NULL, 16);
-		mnemonico = getInstruction(opcode, total_bytes, byte);
-        aux = (i - aux)/2;
-        CL_n = CL_n + aux;
-    
-        printf("%X\t", CL_p);
-		printf("%s\n", mnemonico);
+        for(i = 0; i < num_total_bytes*2;){
+            aux = i;
+            CL_p = CL_n;
+            CL_global[line_counter] = CL_n; //Se guarda el contador de localidades en el arreglo
+            getByte(byte, total_bytes);
+            opcode = (int) strtol(byte, NULL, 16);
+            mnemonico = getInstruction(opcode, total_bytes, byte, CL_p);
+            aux = (i - aux)/2;
+            CL_n = CL_n + aux;
 
-        line_counter++;
-	}
-	
-    
-    char eti_aux[12]; //Buffer para generar etiquetas. 
-    /*
-    
-    ESTA PARTE IMPRIME LA DIRECCIÓN A LA QUE APUNTAN LAS ETIQUETAS.
+            printf("%X\t", CL_p);
+            printf("%s\n", mnemonico);
 
-    -- ESTO SE DEBE IMPRIMIR EN EL ARCHIVO ASM
-
-    */
-        
-    for(int c = 1; c < eti_counter; c++) // Recorre la tabla de simbolos para encontrar las direcciones a las que apuntan las etiquetas
-        for (int b = 1; b < line_counter; b++) //Recorre el arreglo del contador de localidades. 
-            if(symbols[c] == CL_global[b]){
-                strcpy(eti, "ETI");
-                sprintf(eti_aux, "%d", c);  //Se copia el entero en un arreglo
-                strcat(eti, eti_aux);           //Se concatena el entero con la palabra ETI
-                printf("%s\t", eti);
-                printf("%X\n", symbols[c]);
+            if(imn == 0)
+                fprintf(f1, mnemonico);
+            else{
+                fprintf(f1, "\n");
+                fprintf(f1, mnemonico);
             }
-    
+
+            imn++;
+            line_counter++;
+        }
+        fclose(f1);
+    }
+
+
+    char eti_aux[12]; //Buffer para generar etiquetas.
+
+    int c, b;
+    char line[46], space[3];
+    strcpy(space,": ");
+    f1 = fopen("test.asm", "r+");
+    if (f1 == NULL){
+        puts("Unable to open the file");
+    }
+    f2 = fopen("temp.asm", "w+");
+    if (f2 == NULL){
+        puts("Unable to open the file");
+    }
+
+    else{
+
+        for(c = 1; c < eti_counter; c++){ // Recorre la tabla de simbolos para encontrar las direcciones a las que apuntan las etiquetas
+            for (b = 1; b < line_counter; b++){ //Recorre el arreglo del contador de localidades
+
+                fgets(line, sizeof(line), f1);
+
+                if(symbols[c] == CL_global[b]){
+                    strcpy(eti, "ETI");
+                    sprintf(eti_aux, "%d", c);  //Se copia el entero en un arreglo
+                    strcat(eti, eti_aux);           //Se concatena el entero con la palabra ETI
+                    printf("%s\t", eti);
+                    printf("%X\n", symbols[c]);
+                    strcat(eti, space);
+
+                    strcat(eti, line);
+                    fprintf(f2, eti);
+                }
+                else{
+                    fprintf(f2, line);
+                }
+            }
+            rewind(f1);
+            rewind(f2);
+            while(!feof(f2)){
+                fgets(line, sizeof(line), f2);
+                fprintf(f1, line);
+            }
+            rewind(f1);
+            rewind(f2);
+        }
+
+        while(!feof(f2)){  //Ciclo para darle formato al archivo
+            fgets(line, sizeof(line), f2);
+
+            if(line[0] == 'E' && line[1] == 'T'){
+                fprintf(f1, line);
+            }
+            else{
+                fprintf(f1, "    ");
+                fprintf(f1, line);
+            }
+
+
+        }
+        fclose(f1);
+        fclose(f2);
+        remove("temp.asm");
+    }
+
+
 
     return EXIT_SUCCESS;
 }
@@ -97,7 +160,7 @@ char *getEti_p(uint16_t cl){
 			return eti;
 		}
         index++;
-        
+
     }
 	if(index < 100){			//Agrega etiquetas no definidas
 		symbols[index] = cl;
@@ -107,7 +170,7 @@ char *getEti_p(uint16_t cl){
         eti_counter++;
 		return eti;
 	}else
-	return "ERROR";				//Algún error
+        return "ERROR";				//Algún error
 }
 
 void getByte(char argument[], char line[]){
@@ -186,10 +249,10 @@ char *newSwitch(char line[], char ins[]){
     char argument1[20] = {0};
 	char argument2[20] = {0};
     int opbyte;
-	
+
 	getByte(argument1, line);
 	opbyte = (int) strtol(argument1, NULL, 16);
-	
+
 	    switch(opbyte){
 
 			case 0xCB:
@@ -197,7 +260,7 @@ char *newSwitch(char line[], char ins[]){
 	            getByte(argument2, line);
             	opbyte = (int) strtol(argument2, NULL, 16);
 	            switch(opbyte){
-	                    
+
 					case 0x06:                                  //RLC (IX+d) / RLC (IY+d)
                         strcpy(argument2, "");
                         strcat(ins, "+");
@@ -218,7 +281,7 @@ char *newSwitch(char line[], char ins[]){
                         return buffer;
                     case 0x1E:                                  //RR (IX+d) / RR (IY+d)
                         strcpy(argument2, "");
-                        strcat(ins, "+");    
+                        strcat(ins, "+");
                         completeNewSwitch("RR (", ins, argument1, argument2);
                         strcat(buffer, ")");
                     	return buffer;
@@ -634,11 +697,11 @@ char *newSwitch(char line[], char ins[]){
     return "";
 }
 
-char * getInstruction(int opcode, char line[], char byte[]) {
+char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) {
 	char argument1[20] = {0};  //byte mas significativo
 	char argument2[20] = {0};  //byte menos significativo
 	int nextbyte;
-    char name[6];
+    char name[10];
 
 	switch(opcode){
 
@@ -684,8 +747,21 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0x0F:									//	RRCA
 			return "RRCA";
 		case 0x10:									//	DJNZ, e
-			// funcion getEti()
-			return "Incompleto";
+            getByte(argument1, line);
+			strcpy(buffer, argument1);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+			cl = cl + currentCL;
+			cl = cl + 0x02;
+			if(cl > 0xFF){
+                sprintf(argument1, "%X", cl);
+                argument2[0] = argument1[strlen(argument1)-2];
+                argument2[1] = argument1[strlen(argument1)-1];
+                cl = (uint16_t)strtol(argument2, NULL, 16);
+			}
+            strcpy (name, getEti_p(cl));
+			strcpy(buffer, "JR DJNZ, ");
+            strcat(buffer, eti);
+            return buffer;
 		case 0x11:									//	LD DE, nn
 			getByte(argument2, line);
 			getByte(argument1, line);
@@ -707,8 +783,21 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0x17:									//	RLA
 			return "RLA";
 		case 0x18:									//  JR e
-			// funcion getEti()
-			return "Incompleto";
+			getByte(argument1, line);
+			strcpy(buffer, argument1);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+			cl = cl + currentCL;
+			cl = cl + 0x02;
+			if(cl > 0xFF){
+                sprintf(argument1, "%X", cl);
+                argument2[0] = argument1[strlen(argument1)-2];
+                argument2[1] = argument1[strlen(argument1)-1];
+                cl = (uint16_t)strtol(argument2, NULL, 16);
+			}
+            strcpy (name, getEti_p(cl));
+			strcpy(buffer, "JR ");
+            strcat(buffer, eti);
+            return buffer;
 		case 0x19:									//  ADD HL, DE
 			return "ADD HL, DE";
 		case 0x1A:									//	LD A, (DE)
@@ -727,8 +816,21 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0x1F:									//	RRA
 			return "RRA";
 		case 0x20:									//  JR NZ, e
-			// funcion getEti()
-			return "Incompleto";
+			getByte(argument1, line);
+			strcpy(buffer, argument1);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+			cl = cl + currentCL;
+			cl = cl + 0x02;
+			if(cl > 0xFF){
+                sprintf(argument1, "%X", cl);
+                argument2[0] = argument1[strlen(argument1)-2];
+                argument2[1] = argument1[strlen(argument1)-1];
+                cl = (uint16_t)strtol(argument2, NULL, 16);
+			}
+            strcpy (name, getEti_p(cl));
+			strcpy(buffer, "JR NZ, ");
+            strcat(buffer, eti);
+            return buffer;
 		case 0x21:									//  LD HL, nn
 			getByte(argument2, line);
 			getByte(argument1, line);
@@ -754,10 +856,20 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0x27:									//  DAA
 			return "DAA";
 		case 0x28:                                  //  JR Z, e
-            /*getByte(argument1, line);									
-			eti = getEti_r(argument1);
+            getByte(argument1, line);
+			strcpy(buffer, argument1);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+			cl = cl + currentCL;
+			cl = cl + 0x02;
+			if(cl > 0xFF){
+                sprintf(argument1, "%X", cl);
+                argument2[0] = argument1[strlen(argument1)-2];
+                argument2[1] = argument1[strlen(argument1)-1];
+                cl = (uint16_t)strtol(argument2, NULL, 16);
+			}
+            strcpy (name, getEti_p(cl));
 			strcpy(buffer, "JR Z, ");
-            strcat(buffer, eti);*/
+            strcat(buffer, eti);
             return buffer;
 		case 0x29:									//  ADD HL, HL
 			return "ADD HL, HL";
@@ -781,8 +893,21 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0x2F:									//  CPL
 			return "CPL";
 		case 0x30:									//  JR NC, e
-			//funcion getEti()
-			return "Incompleto";
+			getByte(argument1, line);
+			strcpy(buffer, argument1);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+			cl = cl + currentCL;
+			cl = cl + 0x02;
+			if(cl > 0xFF){
+                sprintf(argument1, "%X", cl);
+                argument2[0] = argument1[strlen(argument1)-2];
+                argument2[1] = argument1[strlen(argument1)-1];
+                cl = (uint16_t)strtol(argument2, NULL, 16);
+			}
+            strcpy (name, getEti_p(cl));
+			strcpy(buffer, "JR NC, ");
+            strcat(buffer, eti);
+            return buffer;
 		case 0x31:									//  LD SP, nn
 			getByte(argument2, line);
 			getByte(argument1, line);
@@ -808,8 +933,21 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0x37:									//  SCF
 			return "SCF";
 		case 0x38:									//  JR C, e
-			//funcion getEti()
-			return "Incompleto";
+			getByte(argument1, line);
+			strcpy(buffer, argument1);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+			cl = cl + currentCL;
+			cl = cl + 0x02;
+			if(cl > 0xFF){
+                sprintf(argument1, "%X", cl);
+                argument2[0] = argument1[strlen(argument1)-2];
+                argument2[1] = argument1[strlen(argument1)-1];
+                cl = (uint16_t)strtol(argument2, NULL, 16);
+			}
+            strcpy (name, getEti_p(cl));
+			strcpy(buffer, "JR C, ");
+            strcat(buffer, eti);
+            return buffer;
 		case 0x39:									//	ADD HL, SP
 			return "ADD HL, SP";
 		case 0x3A:									//  LD A, (nn)
@@ -1717,7 +1855,7 @@ char * getInstruction(int opcode, char line[], char byte[]) {
             strcpy (name, getEti_p(cl));
 			strcpy(buffer, "JP C, ");
             strcat(buffer, eti);
-            return buffer;			
+            return buffer;
 		case 0xDB:									//  IN A, (n)
 			getByte(argument1, line);
 			strcpy(argument2, "");
@@ -1748,7 +1886,7 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 			strcat(buffer, argument2);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
             strcpy (name, getEti_p(cl));
-			strcpy(buffer, "JP Z, ");
+			strcpy(buffer, "JP PO, ");
             strcat(buffer, eti);
             return buffer;
 		case 0xE3:									//  EX (SP), HL
@@ -1789,85 +1927,85 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 			opcode = (int) strtol(byte, NULL, 16);
 			// switch para ED
             switch(opcode){
-                case 0x00: 
+                case 0x00:
                     return "MOS_QUIT";
                 case 0x01:
                     return "MOS_CLI";
-                case 0x02: 
+                case 0x02:
                     return "MOS_BYTE";
-                case 0x03: 
+                case 0x03:
                     return "MOS_WORD";
-                case 0x04: 
+                case 0x04:
                     return "MOS_WRCH";
-                case 0x05: 
+                case 0x05:
                     return "MOS_RDCH";
-                case 0x06: 
+                case 0x06:
                     return "MOS_FILE";
-                case 0x07: 
+                case 0x07:
                     return "MOS_ARGS";
-                case 0x08: 
+                case 0x08:
                     return "MOS_BGET";
-                case 0x09: 
+                case 0x09:
                     return "MOS_BPUT";
-                case 0x0A: 
+                case 0x0A:
                     return "MOS_GBPB";
-                case 0x0B: 
+                case 0x0B:
                     return "MOS_FIND";
-                case 0x0C:  
+                case 0x0C:
                     return "MOS_FF0C";
                 case 0x0D:
                     return "MOS_FF0D";
-                case 0x0E:  
+                case 0x0E:
                     return "MOS_FF0E";
                 case 0x0F:
                     return "MOS_FF0F";
-                case 0x40: 
+                case 0x40:
                 	return "IN B,(C)";
-                case 0x41: 
+                case 0x41:
                     return "OUT (C),B";
-                case 0x42: 
+                case 0x42:
                     return "SBC HL,BC";
-                case 0x43: 
+                case 0x43:
                     getByte(argument2, line);
                     getByte(argument1, line);
                     complete("LD (", argument2, argument1);
                     strcat(buffer, "), BC");
                     return buffer;
-                case 0x44: 
+                case 0x44:
                     return "NEG";
-                case 0x45: 
+                case 0x45:
                     return "RETN";
-                case 0x46: 
+                case 0x46:
                     return "IM 0";
-                case 0x47: 
+                case 0x47:
                     return "LD I,A";
-                case 0x48: 
+                case 0x48:
                     return "IN C,(C)";
-                case 0x49: 
+                case 0x49:
                     return "OUT (C),C";
-                case 0x4A: 
+                case 0x4A:
                     return "ADC HL,BC";
-                case 0x4B: 
+                case 0x4B:
                     getByte(argument2, line);
                     getByte(argument1, line);
                     complete("LD BC,(", argument2, argument1);
                     strcat(buffer, ")");
                     return buffer;
                 case 0x4C:
-                    return "[neg]"; 
-                case 0x4D: 
+                    return "[neg]";
+                case 0x4D:
                     return "RETI";
-                case 0x4E: 
+                case 0x4E:
                     return "[im0]";
-                case 0x4F: 
-                    return "LD R,A"; 
-                case 0x50: 
+                case 0x4F:
+                    return "LD R,A";
+                case 0x50:
                     return "IN D,(C)";
-                case 0x51: 
+                case 0x51:
                     return "OUT (C),D";
-                case 0x52: 
+                case 0x52:
                     return "SBC HL,DE";
-                case 0x53: 
+                case 0x53:
                     getByte(argument2, line);
                     getByte(argument1, line);
                     complete("LD (", argument2, argument1);
@@ -1877,11 +2015,11 @@ char * getInstruction(int opcode, char line[], char byte[]) {
                     return "[neg]";
                 case 0x55:
                     return "[retn]";
-                case 0x56: 
+                case 0x56:
                     return "IM 1";
-                case 0x57: 
+                case 0x57:
                     return "LD A,I";
-                case 0x58: 
+                case 0x58:
                     return "IN E,(C)";
                 case 0x59:
                     return "OUT (C),E";
@@ -1892,16 +2030,16 @@ char * getInstruction(int opcode, char line[], char byte[]) {
                     getByte(argument1, line);
                     complete("LD DE,(", argument2, argument1);
                     strcat(buffer, ")");
-                    return buffer; 
+                    return buffer;
                 case 0x5C:
                     return "[neg]";
                 case 0x5D:
                     return "[reti]";
                 case 0x5E:
-                    return "IM 2"; 
+                    return "IM 2";
                 case 0x5F:
                     return "LD A,R";
-                case 0x60: 
+                case 0x60:
                     return "IN H,(C)";
                 case 0x61:
                     return "OUT (C),H";
@@ -1914,13 +2052,13 @@ char * getInstruction(int opcode, char line[], char byte[]) {
                     strcat(buffer, "), HL");
                     return buffer;
                 case 0x64:
-                    return "[neg]"; 
+                    return "[neg]";
                 case 0x65:
                     return "[retn]";
                 case 0x66:
                     return "[im0]";
                 case 0x67:
-                    return "RRD"; 
+                    return "RRD";
                 case 0x68:
                     return "IN L,(C)";
                 case 0x69:
@@ -1932,7 +2070,7 @@ char * getInstruction(int opcode, char line[], char byte[]) {
                     getByte(argument1, line);
                     complete("LD HL,(", argument2, argument1);
                     strcat(buffer, ")");
-                    return buffer; 
+                    return buffer;
                 case 0x6C:
                     return "[neg]";
                 case 0x6D:
@@ -1972,7 +2110,7 @@ char * getInstruction(int opcode, char line[], char byte[]) {
                     getByte(argument1, line);
                     complete("LD SP,(", argument2, argument1);
                     strcat(buffer, ")");
-                    return buffer; 
+                    return buffer;
                 case 0x7C:
                     return "[neg]";
                 case 0x7D:
@@ -2047,8 +2185,8 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 		case 0xF2: 									//  JP P, e
 			getByte(argument2, line);
             getByte(argument1, line);
-			strcpy(buffer, argument2);
-			strcat(buffer, argument1);
+            strcpy(buffer, argument1);
+			strcat(buffer, argument2);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
             strcpy (name, getEti_p(cl));
 			strcpy(buffer, "JP P, ");
@@ -2101,5 +2239,5 @@ char * getInstruction(int opcode, char line[], char byte[]) {
 			printf("Error: formato incorrecto");
 			return "ERROR";
 	}
-	
+
 }
