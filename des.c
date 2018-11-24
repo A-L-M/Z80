@@ -18,7 +18,7 @@ int num_total_bytes = 0; 	   // numero total de bytes que abarca el programa
 char buffer[20];  			   //almacenamiento temporal para retorno en getInstruction
 uint16_t symbols[1000] = {0x0000};   //Tabla de simbolos
 uint16_t cl;				   //Contador de localidades asociado a las etiquetas
-char eti[6];				   //Nombres de las etiquetas
+char eti[100];				   //Nombres de las etiquetas
 int eti_counter = 1;
 
 
@@ -66,10 +66,10 @@ int main(int argc, char **argv) {
             printf("%s\n", mnemonico);
 
             if(imn == 0)
-                fprintf(f1, mnemonico);
+                fprintf(f1, "%s", mnemonico);
             else{
                 fprintf(f1, "\n");
-                fprintf(f1, mnemonico);
+                fprintf(f1, "%s", mnemonico);
             }
 
             imn++;
@@ -78,8 +78,22 @@ int main(int argc, char **argv) {
         fclose(f1);
     }
 
+    /*
+    for (int count = 1; count < eti_counter; count++)
+    {
+    
+        printf("%X\n", symbols[count]);
+    }
 
-    char eti_aux[12]; //Buffer para generar etiquetas.
+    for (int count = 1; count < line_counter; count++)
+    {
+        
+        printf("%X\n", CL_global[count]);
+    }
+
+    */
+
+    char eti_aux[20]; //Buffer para generar etiquetas.
 
     int c, b;
     char line[46], space[3];
@@ -109,17 +123,17 @@ int main(int argc, char **argv) {
                     strcat(eti, space);
 
                     strcat(eti, line);
-                    fprintf(f2, eti);
+                    fprintf(f2, "%s", eti);
                 }
                 else{
-                    fprintf(f2, line);
+                    fprintf(f2, "%s", line);
                 }
             }
             rewind(f1);
             rewind(f2);
             while(!feof(f2)){
-                fgets(line, sizeof(line), f2);
-                fprintf(f1, line);
+               fgets(line, sizeof(line), f2);
+                fprintf(f1, "%s",line);
             }
             rewind(f1);
             rewind(f2);
@@ -129,11 +143,11 @@ int main(int argc, char **argv) {
             fgets(line, sizeof(line), f2);
 
             if(line[0] == 'E' && line[1] == 'T'){
-                fprintf(f1, line);
+                fprintf(f1, "%s",line);
             }
             else{
                 fprintf(f1, "    ");
-                fprintf(f1, line);
+                fprintf(f1, "%s", line);
             }
 
 
@@ -198,6 +212,7 @@ int countLines(char * filename){
 	}
 	return 0;
 }
+
 char * getLines(char * filename, int num_lines){
 	FILE *file = fopen(filename, "r");
 	if (file == NULL){
