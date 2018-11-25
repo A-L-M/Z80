@@ -1152,21 +1152,21 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 			return "ADC A, (HL)";
 		case 0x8F:									//  ADC A, A
 			return "ADC A, A";
-		case 0x90:									//  SUB A, B
-			return "SUB A, B";
-		case 0x91:									//  SUB A, C
-			return "SUB A, C";
-		case 0x92: 									//  SUB A, D
-			return "SUB A, D";
-		case 0x93:									//  SUB A, E
-			return "SUB A, E";
-		case 0x94:									//  SUB A, H
-			return "SUB A, H";
-		case 0x95:									//  SUB A, L
-			return "SUB A, L";
-		case 0x96:									//  SUB A, (HL)
-			return "SUB A, (HL)";
-		case 0x97:									//  SUB A, A
+		case 0x90:									//  SUB B
+			return "SUB B";
+		case 0x91:									//  SUB C
+			return "SUB C";
+		case 0x92: 									//  SUB D
+			return "SUB D";
+		case 0x93:									//  SUB E
+			return "SUB E";
+		case 0x94:									//  SUB H
+			return "SUB H";
+		case 0x95:									//  SUB L
+			return "SUB L";
+		case 0x96:									//  SUB (HL)
+			return "SUB (HL)";
+		case 0x97:									//  SUB A
 			return "SUB A, A";
 		case 0x98:									//  SBC A, B
 			return "SBC A, B";
