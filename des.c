@@ -11,15 +11,19 @@ char *newSwitch(char [], char []);
 int countLines(char *);
 char *getLines(char *, int);
 char *getEti_p(uint16_t);
+char *getSub_p(uint16_t);
 
 
 int i;  					   		//contador
 int num_total_bytes = 0; 	   		//numero total de bytes que abarca el programa
 char buffer[20];  			   		//almacenamiento temporal para retorno en getInstruction
-uint16_t symbols[1000] = {0x0000};  //Tabla de simbolos
+uint16_t symbols[100] = {0x0000};  	//Tabla de simbolos
+uint16_t subSym[100] = {0x0000};  	//Tabla de símbolos de subrutinas
 uint16_t cl;				   		//Contador de localidades asociado a las etiquetas
 char eti[100];				   		//Nombres de las etiquetas
+char subs[100];				   		//Nombres de las subrutinas
 int eti_counter = 1;				//Lleva el número total de etiquetas
+int sub_counter = 1;				//Lleva el número total de subrutinas
 
 
 int main(int argc, char **argv) {
@@ -70,18 +74,25 @@ int main(int argc, char **argv) {
             
 			fprintf(f1, "%s\n", mnemonico);
 
+			printf("%.4X\t", CL_global[line_counter]);
+			printf("%s\n", mnemonico);
+
             line_counter++;
         }
         fclose(f1);
     }
 
-    /*
+	for (int ba = 1; ba < sub_counter; ba++){
+		printf("%.4X\n", subSym[ba]);
+	}
+
+    
     for (int count = 1; count < eti_counter; count++)
     {
 
-        printf("%X\n", symbols[count]);
+        printf("%.4X\n", symbols[count]);
     }
-
+/*
     for (int count = 1; count < line_counter; count++)
     {
 
@@ -90,7 +101,7 @@ int main(int argc, char **argv) {
 
     */
 
-    int c, b;			//Variables para los ciclos siguientes
+    int c, b, a;		//Variables para los ciclos siguientes
     char eti_aux[20];	//Buffer para generar etiquetas.
     char line[46];		//Variable para guardar las instrucciones
     
@@ -104,14 +115,24 @@ int main(int argc, char **argv) {
 		}else{
 			for(c = 1; c < line_counter; c++){ // Recorre el contador de localidades global
 				fgets(line, sizeof(line), f1);	//Se lee una instrucción de
-				for (b = 1; b < eti_counter; b++){ //Recorre la tabla de simbolos
+				for (b = 1; b < eti_counter; b++){ //Recorre la tabla de simbolos de etiquetas
 					if(symbols[b] == CL_global[c]){
 						strcpy(eti, "ETI");				//Se copia la palabra ETI en el arreglo eti
 						sprintf(eti_aux, "%d", b);  	//Se copia el número de etiqueta en el arreglo eti_aux
 						strcat(eti, eti_aux);           //Se concatena el número de etiqueta con la palabra ETI
-						strcat(eti, ":");				//Se concatena ":" y un espacio
+						strcat(eti, ":");				//Se concatena ":"
 						strcat(eti, line);				//Se concatena la instrucción
 						fprintf(f2, "%s", eti);			//Se imprime en el archivo ASM
+					}
+				}
+				for(a = 1; a < sub_counter; a++){
+					if(subSym[a] == CL_global[c]){
+						strcpy(subs, "SUB");			//Se copia la palabra SUB en el arreglo eti
+						sprintf(eti_aux, "%d", a);  	//Se copia el número de subrutina en el arreglo eti_aux
+						strcat(subs, eti_aux);          //Se concatena el número de subrutina con la palabra SUB
+						strcat(subs, ":");				//Se concatena ":"
+						strcat(subs, line);				//Se concatena la instrucción
+						fprintf(f2, "%s", subs);		//Se imprime en el archivo ASM
 					}
 				}
 				strcpy(eti, "     ");		//Se concatenan espacios en blanco para que quede alineado
@@ -146,6 +167,30 @@ char *getEti_p(uint16_t cl){
 		strcat(eti, aux);
         eti_counter++;
 		return eti;
+	}else
+        return "ERROR";				//Algún error
+}
+
+char *getSub_p(uint16_t cl){
+    int index = 1;
+	char aux[12];	//Todos los números enteros caben en un arreglo de 12 carcateres
+    while (subSym[index] != 0x0000 && index < 100){	//Busca por subrutinas ya definidas
+        if (cl == subSym[index]){		//Si lo encuentra
+			strcpy(subs, "SUB");
+			sprintf(aux, "%d", index); 	//Se copia el entero en un arreglo
+			strcat(subs, aux);			//Se concatena el entero con la palabra SUB
+			return subs;
+		}
+        index++;
+
+    }
+	if(index < 100){			//Agrega subrutinas no definidas
+		subSym[index] = cl;
+		strcpy(subs, "SUB");
+		sprintf(aux, "%d", index);
+		strcat(subs, aux);
+        sub_counter++;
+		return subs;
 	}else
         return "ERROR";				//Algún error
 }
@@ -1228,8 +1273,15 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
             strcat(buffer, eti);
             return buffer;
 		case 0xC4:									//  CALL NZ, e
-			//funcion getEti()
-			return "Incompleto";
+			getByte(argument2, line);
+            getByte(argument1, line);
+			strcpy(buffer, argument1);
+			strcat(buffer, argument2);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+            strcpy (name, getSub_p(cl));
+			strcpy(buffer, "CALL NZ, ");
+            strcat(buffer, subs);
+            return buffer;
 		case 0xC5:									//  PUSH BC
 			return "PUSH BC";
 		case 0xC6:									//  ADD A, n
@@ -1776,11 +1828,25 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 					return "ERROR";
 			}
 		case 0xCC:									//  CALL Z, e
-			// funcion getEti()
-			return "Incompleto";
+			getByte(argument2, line);
+            getByte(argument1, line);
+			strcpy(buffer, argument1);
+			strcat(buffer, argument2);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+            strcpy (name, getSub_p(cl));
+			strcpy(buffer, "CALL Z, ");
+            strcat(buffer, subs);
+            return buffer;
 		case 0xCD:									//  CALL e
-			// funcion getEti()
-			return "Incompleto";
+			getByte(argument2, line);
+            getByte(argument1, line);
+			strcpy(buffer, argument1);
+			strcat(buffer, argument2);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+            strcpy (name, getSub_p(cl));
+			strcpy(buffer, "CALL ");
+            strcat(buffer, subs);
+            return buffer;
 		case 0xCE:									//  ADC A, n
 			getByte(argument1, line);
 			strcpy(argument2, "");
@@ -1809,8 +1875,15 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 			strcat(buffer, "), A");
 			return buffer;
 		case 0xD4:									//  CALL NC, e
-			// funcion getEti()
-			return "Incompleto";
+			getByte(argument2, line);
+            getByte(argument1, line);
+			strcpy(buffer, argument1);
+			strcat(buffer, argument2);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+            strcpy (name, getSub_p(cl));
+			strcpy(buffer, "CALL NC, ");
+            strcat(buffer, subs);
+            return buffer;
 		case 0xD5:									//  PUSH DE
 			return "PUSH DE";
 		case 0xD6:									//  SUB A, n
@@ -1841,8 +1914,15 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 			strcat(buffer, ")");
 			return buffer;
 		case 0xDC:									//  CALL C, e
-			// funcion getEti()
-			return "Incompleto";
+			getByte(argument2, line);
+            getByte(argument1, line);
+			strcpy(buffer, argument1);
+			strcat(buffer, argument2);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+            strcpy (name, getSub_p(cl));
+			strcpy(buffer, "CALL C, ");
+            strcat(buffer, subs);
+            return buffer;
 		case 0xDD:									//  ** DD **
 			strcpy(argument1, "IX");
 			return newSwitch(line, argument1);
@@ -1870,8 +1950,15 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 		case 0xE3:									//  EX (SP), HL
 			return "EX (SP), HL";
 		case 0xE4:									//  CALL PO, e
-			// funcion getEti()
-			return "Incompleto";
+			getByte(argument2, line);
+            getByte(argument1, line);
+			strcpy(buffer, argument1);
+			strcat(buffer, argument2);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+            strcpy (name, getSub_p(cl));
+			strcpy(buffer, "CALL PO, ");
+            strcat(buffer, subs);
+            return buffer;
 		case 0xE5:									//  PUSH HL
 			return "PUSH HL";
 		case 0xE6:									//  AND n
@@ -1898,8 +1985,15 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 		case 0xEB:									//  EX DE, HL
 			return "EX DE, HL";
 		case 0xEC:									//  CALL PE, e
-			// funcion getEti()
-			return "Incompleto";
+			getByte(argument2, line);
+            getByte(argument1, line);
+			strcpy(buffer, argument1);
+			strcat(buffer, argument2);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+            strcpy (name, getSub_p(cl));
+			strcpy(buffer, "CALL PE, ");
+            strcat(buffer, subs);
+            return buffer;
 		case 0xED:									//  ** ED **
 			getByte(byte, line);
 			opcode = (int) strtol(byte, NULL, 16);
@@ -2173,8 +2267,15 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 		case 0xF3:									//  DI
 			return "DI";
 		case 0xF4:									//  CALL P, e
-			// funcion getEti()
-			return "Incompleto";
+			getByte(argument2, line);
+            getByte(argument1, line);
+			strcpy(buffer, argument1);
+			strcat(buffer, argument2);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+            strcpy (name, getSub_p(cl));
+			strcpy(buffer, "CALL P, ");
+            strcat(buffer, subs);
+            return buffer;
 		case 0xF5:									//  PUSH AF
 			return "PUSH AF";
 		case 0xF6:									//  OR n
@@ -2201,8 +2302,15 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 		case 0xFB:									//  EI
 			return "EI";
 		case 0xFC:									//  CALL M, e
-			// funcion getEti()
-			return "Incompleto";
+			getByte(argument2, line);
+            getByte(argument1, line);
+			strcpy(buffer, argument1);
+			strcat(buffer, argument2);
+			cl = (uint16_t)strtol(buffer, NULL, 16);
+            strcpy (name, getSub_p(cl));
+			strcpy(buffer, "CALL M, ");
+            strcat(buffer, subs);
+            return buffer;
 		case 0xFD:									//  ** FD **
 			strcpy(argument1, "IY");
 			return newSwitch(line, argument1);
