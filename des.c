@@ -1886,10 +1886,10 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
             return buffer;
 		case 0xD5:									//  PUSH DE
 			return "PUSH DE";
-		case 0xD6:									//  SUB A, n
+		case 0xD6:									//  SUB n
 			getByte(argument1, line);
 			strcpy(argument2, "");
-			complete("SUB A, ", argument1, argument2);
+			complete("SUB ", argument1, argument2);
 			return buffer;
 		case 0xD7:									//  RST 10H
 			return "RST 10H";
