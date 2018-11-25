@@ -782,7 +782,7 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
                 cl = (uint16_t)strtol(argument2, NULL, 16);
 			}
             strcpy (name, getEti_p(cl));
-			strcpy(buffer, "DJNZ, ");
+			strcpy(buffer, "DJNZ ");
             strcat(buffer, eti);
             return buffer;
 		case 0x11:									//	LD DE, nn
