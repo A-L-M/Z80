@@ -13,29 +13,32 @@ char *getLines(char *, int);
 char *getEti_p(uint16_t);
 
 
-int i;  					   //contador
-int num_total_bytes = 0; 	   // numero total de bytes que abarca el programa
-char buffer[20];  			   //almacenamiento temporal para retorno en getInstruction
-uint16_t symbols[1000] = {0x0000};   //Tabla de simbolos
-uint16_t cl;				   //Contador de localidades asociado a las etiquetas
-char eti[100];				   //Nombres de las etiquetas
-int eti_counter = 1;
+int i;  					   		//contador
+int num_total_bytes = 0; 	   		//numero total de bytes que abarca el programa
+char buffer[20];  			   		//almacenamiento temporal para retorno en getInstruction
+uint16_t symbols[1000] = {0x0000};  //Tabla de simbolos
+uint16_t cl;				   		//Contador de localidades asociado a las etiquetas
+char eti[100];				   		//Nombres de las etiquetas
+int eti_counter = 1;				//Lleva el número total de etiquetas
 
 
 int main(int argc, char **argv) {
-    FILE *f1, *f2;  //archivo asm
-    char fileH[20]; //nombre archivo hex
-    char fileA[20]; //nombre archivo asm
-	int num_lines;  // num_lines guardara la cantidad de lineas del archivo
-	int opcode;  // guardara un byte en base 10
-	char byte[3]; // almacena un byte individual
-	char *mnemonico; //almacena la instruccion completa
-	int aux;		//auxiliar para calcular contador de localidades
-	int imn = 0;  //índice para escribir mnemonicos en archivo
-    uint16_t CL_n = 0x0000;
-    uint16_t CL_p = 0x0000;
+    FILE *f1, *f2;  			//archivo asm
+    char fileH[20]; 			//nombre archivo hex
+    char fileA[20]; 			//nombre archivo asm
+	int num_lines;  			//num_lines guardara la cantidad de lineas del archivo
+	int opcode;  				//guardara un byte en base 10
+	char byte[3]; 				//almacena un byte individual
+	char *mnemonico; 			//almacena la instruccion completa
+	int aux;					//auxiliar para calcular contador de localidades
 
-    strcpy(fileH, argv[1]);
+    uint16_t CL_n = 0x0000;		//Guarda el siguiente valor del contador de localidades
+    uint16_t CL_p = 0x0000;		//Guarda el valor previo del contador de localidades
+
+    uint16_t CL_global[1000] = {0x0000};	//Aquí guarda el contador de localidades de cada línea.
+    int line_counter = 1; 					//Ayuda a recorrer el arreglo con CL_global.
+
+    strcpy(fileH, argv[1]);			// Se guarda el nombre del programa en el arreglo 'fileH'
 	num_lines = countLines(fileH);  // countLines regresa el numero de lineas CON INSTRUCCIONES (no cuenta la ultima)
 
 	/*se crea un arreglo que almacenara todos los bytes que representan codigo de operacion del programa. Cada byte son 2 caracteres,
@@ -45,20 +48,16 @@ int main(int argc, char **argv) {
 	strcpy(total_bytes, temp);
 	free(temp); // se libera memoria asignada dentro de la funcion getLines()
 
-    int num_of_eti = 0;
-    uint16_t CL_global[1000] = {0x0000}; //Aquí guarda el contador de localidades de cada línea.
-    int line_counter = 1; //Ayuda a generar el arreglo con todos los valores del contador de localodades.
-
-    strcpy(fileA, fileH);
+    strcpy(fileA, fileH);			//Se asigna genera el nombre del archivo ASM
     fileA[strlen(fileA)-3] = 'a';
     fileA[strlen(fileA)-2] = 's';
     fileA[strlen(fileA)-1] = 'm';
-    f1 = fopen(fileA,"w");
+
+    f1 = fopen(".temp","w");		//Esto es un arvhico temporal
     if (f1 == NULL){
         puts("Unable to open the file");
         }
     else{
-
         for(i = 0; i < num_total_bytes*2;){
             aux = i;
             CL_p = CL_n;
@@ -68,18 +67,9 @@ int main(int argc, char **argv) {
             mnemonico = getInstruction(opcode, total_bytes, byte, CL_p);
             aux = (i - aux)/2;
             CL_n = CL_n + aux;
+            
+			fprintf(f1, "%s\n", mnemonico);
 
-            printf("%X\t", CL_p);
-            printf("%s\n", mnemonico);
-
-            if(imn == 0)
-                fprintf(f1, "%s", mnemonico);
-            else{
-                fprintf(f1, "\n");
-                fprintf(f1, "%s", mnemonico);
-            }
-
-            imn++;
             line_counter++;
         }
         fclose(f1);
@@ -100,75 +90,41 @@ int main(int argc, char **argv) {
 
     */
 
-    char eti_aux[20]; //Buffer para generar etiquetas.
-
-    int c, b;
-    char line[46], space[3];
-    strcpy(space,": ");
-    f1 = fopen(fileA, "r+");
+    int c, b;			//Variables para los ciclos siguientes
+    char eti_aux[20];	//Buffer para generar etiquetas.
+    char line[46];		//Variable para guardar las instrucciones
+    
+	f1 = fopen(".temp", "r+");
     if (f1 == NULL){
         puts("Unable to open the file");
-    }
-    f2 = fopen("temp.asm", "w+");
-    if (f2 == NULL){
-        puts("Unable to open the file");
-    }
-
-    else{
-
-        for(c = 1; c < eti_counter; c++){ // Recorre la tabla de simbolos para encontrar las direcciones a las que apuntan las etiquetas
-            for (b = 1; b < line_counter; b++){ //Recorre el arreglo del contador de localidades
-
-                fgets(line, sizeof(line), f1);
-
-                if(symbols[c] == CL_global[b]){
-                    strcpy(eti, "ETI");
-                    sprintf(eti_aux, "%d", c);  //Se copia el entero en un arreglo
-                    strcat(eti, eti_aux);           //Se concatena el entero con la palabra ETI
-                    printf("%s\t", eti);
-                    printf("%X\n", symbols[c]);
-                    strcat(eti, space);
-
-                    strcat(eti, line);
-                    fprintf(f2, "%s", eti);
-                }
-                else{
-                    fprintf(f2, "%s", line);
-                }
-            }
-            rewind(f1);
-            rewind(f2);
-            while(!feof(f2)){
-               fgets(line, sizeof(line), f2);
-                fprintf(f1, "%s",line);
-            }
-            rewind(f1);
-            rewind(f2);
-        }
-
-        while(!feof(f2)){  //Ciclo para darle formato al archivo
-            fgets(line, sizeof(line), f2);
-
-            if(line[0] == 'E' && line[1] == 'T'){
-                fprintf(f1, "%s",line);
-            }
-            else{
-                fprintf(f1, "    ");
-                fprintf(f1, "%s", line);
-            }
-
-
-        }
-        fclose(f1);
-        fclose(f2);
-        remove("temp.asm");
-    }
-
-
-
+    }else{
+		f2 = fopen(fileA, "w+");
+		if (f2 == NULL){
+			puts("Unable to open the file");
+		}else{
+			for(c = 1; c < line_counter; c++){ // Recorre el contador de localidades global
+				fgets(line, sizeof(line), f1);	//Se lee una instrucción de
+				for (b = 1; b < eti_counter; b++){ //Recorre la tabla de simbolos
+					if(symbols[b] == CL_global[c]){
+						strcpy(eti, "ETI");				//Se copia la palabra ETI en el arreglo eti
+						sprintf(eti_aux, "%d", b);  	//Se copia el número de etiqueta en el arreglo eti_aux
+						strcat(eti, eti_aux);           //Se concatena el número de etiqueta con la palabra ETI
+						strcat(eti, ":");				//Se concatena ":" y un espacio
+						strcat(eti, line);				//Se concatena la instrucción
+						fprintf(f2, "%s", eti);			//Se imprime en el archivo ASM
+					}
+				}
+				strcpy(eti, "     ");		//Se concatenan espacios en blanco para que quede alineado
+				strcat(eti, line);			//Se concatena la instrucción
+				fprintf(f2, "%s", eti);		//Se imprime en el archivo ASM
+			}
+		}
+	}
+	fclose(f1);
+	fclose(f2);
+	remove(".temp");
     return EXIT_SUCCESS;
 }
-
 
 char *getEti_p(uint16_t cl){
     int index = 1;
