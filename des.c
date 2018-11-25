@@ -11,38 +11,33 @@ char *newSwitch(char [], char []);
 int countLines(char *);
 char *getLines(char *, int);
 char *getEti_p(uint16_t);
-char *getSub_p(uint16_t);
 
 
-int i;  					   		//contador
-int num_total_bytes = 0; 	   		//numero total de bytes que abarca el programa
-char buffer[20];  			   		//almacenamiento temporal para retorno en getInstruction
-uint16_t symbols[100] = {0x0000};  	//Tabla de simbolos
-uint16_t subSym[100] = {0x0000};  	//Tabla de símbolos de subrutinas
-uint16_t cl;				   		//Contador de localidades asociado a las etiquetas
-char eti[100];				   		//Nombres de las etiquetas
-char subs[100];				   		//Nombres de las subrutinas
-int eti_counter = 1;				//Lleva el número total de etiquetas
-int sub_counter = 1;				//Lleva el número total de subrutinas
+int i;  					   //contador
+int num_total_bytes = 0; 	   // numero total de bytes que abarca el programa
+char buffer[20];  			   //almacenamiento temporal para retorno en getInstruction
+uint16_t symbols[1000] = {0x0000};   //Tabla de simbolos
+uint16_t cl;				   //Contador de localidades asociado a las etiquetas
+char eti[100];				   //Nombres de las etiquetas
+char eti00[100];               //nombre etiqueta con valor = 0
+int eti_counter = 1;
+int bandera = 0;                  //bandera para saber si hay etiqueta con valor = 0
 
 
 int main(int argc, char **argv) {
-    FILE *f1, *f2;  			//archivo asm
-    char fileH[20]; 			//nombre archivo hex
-    char fileA[20]; 			//nombre archivo asm
-	int num_lines;  			//num_lines guardara la cantidad de lineas del archivo
-	int opcode;  				//guardara un byte en base 10
-	char byte[3]; 				//almacena un byte individual
-	char *mnemonico; 			//almacena la instruccion completa
-	int aux;					//auxiliar para calcular contador de localidades
+    FILE *f1, *f2;  //archivo asm
+    char fileH[20]; //nombre archivo hex
+    char fileA[20]; //nombre archivo asm
+	int num_lines;  // num_lines guardara la cantidad de lineas del archivo
+	int opcode;  // guardara un byte en base 10
+	char byte[3]; // almacena un byte individual
+	char *mnemonico; //almacena la instruccion completa
+	int aux;		//auxiliar para calcular contador de localidades
+	int imn = 0;  //índice para escribir mnemonicos en archivo
+    uint16_t CL_n = 0x0000;
+    uint16_t CL_p = 0x0000;
 
-    uint16_t CL_n = 0x0000;		//Guarda el siguiente valor del contador de localidades
-    uint16_t CL_p = 0x0000;		//Guarda el valor previo del contador de localidades
-
-    uint16_t CL_global[1000] = {0x0000};	//Aquí guarda el contador de localidades de cada línea.
-    int line_counter = 1; 					//Ayuda a recorrer el arreglo con CL_global.
-
-    strcpy(fileH, argv[1]);			// Se guarda el nombre del programa en el arreglo 'fileH'
+    strcpy(fileH, argv[1]);
 	num_lines = countLines(fileH);  // countLines regresa el numero de lineas CON INSTRUCCIONES (no cuenta la ultima)
 
 	/*se crea un arreglo que almacenara todos los bytes que representan codigo de operacion del programa. Cada byte son 2 caracteres,
@@ -52,16 +47,21 @@ int main(int argc, char **argv) {
 	strcpy(total_bytes, temp);
 	free(temp); // se libera memoria asignada dentro de la funcion getLines()
 
-    strcpy(fileA, fileH);			//Se asigna genera el nombre del archivo ASM
+    //int num_of_eti = 0;
+    uint16_t CL_global[1000] = {0x0000}; //Aquí guarda el contador de localidades de cada línea.
+    int line_counter = 1; //Ayuda a generar el arreglo con todos los valores del contador de localodades.
+
+
+    strcpy(fileA, fileH);
     fileA[strlen(fileA)-3] = 'a';
     fileA[strlen(fileA)-2] = 's';
     fileA[strlen(fileA)-1] = 'm';
-
-    f1 = fopen(".temp","w");		//Esto es un arvhico temporal
+    f1 = fopen(fileA,"w");
     if (f1 == NULL){
         puts("Unable to open the file");
         }
     else{
+
         for(i = 0; i < num_total_bytes*2;){
             aux = i;
             CL_p = CL_n;
@@ -71,28 +71,30 @@ int main(int argc, char **argv) {
             mnemonico = getInstruction(opcode, total_bytes, byte, CL_p);
             aux = (i - aux)/2;
             CL_n = CL_n + aux;
-            
-			fprintf(f1, "%s\n", mnemonico);
 
-			printf("%.4X\t", CL_global[line_counter]);
-			printf("%s\n", mnemonico);
+            printf("%X\t", CL_p);
+            printf("%s\n", mnemonico);
 
+            if(imn == 0)
+                fprintf(f1, "%s", mnemonico);
+            else{
+                fprintf(f1, "\n");
+                fprintf(f1, "%s", mnemonico);
+            }
+
+            imn++;
             line_counter++;
         }
         fclose(f1);
     }
 
-	for (int ba = 1; ba < sub_counter; ba++){
-		printf("%.4X\n", subSym[ba]);
-	}
-
-    
+    /*
     for (int count = 1; count < eti_counter; count++)
     {
 
-        printf("%.4X\n", symbols[count]);
+        printf("%X\n", symbols[count]);
     }
-/*
+
     for (int count = 1; count < line_counter; count++)
     {
 
@@ -101,55 +103,104 @@ int main(int argc, char **argv) {
 
     */
 
-    int c, b, a;		//Variables para los ciclos siguientes
-    char eti_aux[20];	//Buffer para generar etiquetas.
-    char line[46];		//Variable para guardar las instrucciones
-    
-	f1 = fopen(".temp", "r+");
+    char eti_aux[20]; //Buffer para generar etiquetas.
+
+    int c, b;
+
+    char line[46], space[3];
+    strcpy(space,": ");
+    f1 = fopen(fileA, "r+");
     if (f1 == NULL){
         puts("Unable to open the file");
-    }else{
-		f2 = fopen(fileA, "w+");
-		if (f2 == NULL){
-			puts("Unable to open the file");
-		}else{
-			for(c = 1; c < line_counter; c++){ // Recorre el contador de localidades global
-				fgets(line, sizeof(line), f1);	//Se lee una instrucción de
-				for (b = 1; b < eti_counter; b++){ //Recorre la tabla de simbolos de etiquetas
-					if(symbols[b] == CL_global[c]){
-						strcpy(eti, "ETI");				//Se copia la palabra ETI en el arreglo eti
-						sprintf(eti_aux, "%d", b);  	//Se copia el número de etiqueta en el arreglo eti_aux
-						strcat(eti, eti_aux);           //Se concatena el número de etiqueta con la palabra ETI
-						strcat(eti, ":");				//Se concatena ":"
-						strcat(eti, line);				//Se concatena la instrucción
-						fprintf(f2, "%s", eti);			//Se imprime en el archivo ASM
-					}
-				}
-				for(a = 1; a < sub_counter; a++){
-					if(subSym[a] == CL_global[c]){
-						strcpy(subs, "SUB");			//Se copia la palabra SUB en el arreglo eti
-						sprintf(eti_aux, "%d", a);  	//Se copia el número de subrutina en el arreglo eti_aux
-						strcat(subs, eti_aux);          //Se concatena el número de subrutina con la palabra SUB
-						strcat(subs, ":");				//Se concatena ":"
-						strcat(subs, line);				//Se concatena la instrucción
-						fprintf(f2, "%s", subs);		//Se imprime en el archivo ASM
-					}
-				}
-				strcpy(eti, "     ");		//Se concatenan espacios en blanco para que quede alineado
-				strcat(eti, line);			//Se concatena la instrucción
-				fprintf(f2, "%s", eti);		//Se imprime en el archivo ASM
-			}
-		}
-	}
-	fclose(f1);
-	fclose(f2);
-	remove(".temp");
+    }
+    f2 = fopen("temp.asm", "w+");
+    if (f2 == NULL){
+        puts("Unable to open the file");
+    }
+
+    else{
+
+        for(c = 1; c < eti_counter; c++){ // Recorre la tabla de simbolos para encontrar las direcciones a las que apuntan las etiquetas
+            for (b = 1; b < line_counter; b++){ //Recorre el arreglo del contador de localidades
+
+                fgets(line, sizeof(line), f1);
+
+                if(symbols[c] == CL_global[b]){
+                    strcpy(eti, "ETI");
+                    sprintf(eti_aux, "%d", c);  //Se copia el entero en un arreglo
+                    strcat(eti, eti_aux);           //Se concatena el entero con la palabra ETI
+                    printf("%s\t", eti);
+                    printf("%X\n", symbols[c]);
+                    strcat(eti, space);
+
+                    strcat(eti, line);
+                    fprintf(f2, "%s", eti);
+                }
+                else{
+                    fprintf(f2, "%s", line);
+                }
+            }
+            rewind(f1);
+            rewind(f2);
+            while(!feof(f2)){
+               fgets(line, sizeof(line), f2);
+                fprintf(f1, "%s",line);
+            }
+            rewind(f1);
+            rewind(f2);
+        }
+
+        while(!feof(f2)){  //Ciclo para darle formato al archivo
+            fgets(line, sizeof(line), f2);
+
+            if(line[0] == 'E' && line[1] == 'T'){
+                fprintf(f1, "%s",line);
+            }
+            else{
+                fprintf(f1, "    ");
+                fprintf(f1, "%s", line);
+            }
+
+
+        }
+        fclose(f1);
+        fclose(f2);
+        remove("temp.asm");
+    }
+
     return EXIT_SUCCESS;
 }
+
 
 char *getEti_p(uint16_t cl){
     int index = 1;
 	char aux[12];	//Todos los números enteros caben en un arreglo de 12 carcateres
+
+    if(cl == 0x00){
+        if(bandera == 0){
+            bandera = 1;
+            while (symbols[index] != 0x0000 && index < 100){  //Se recorre el arreglo hasta encontrar el 0x00
+                index++;
+            }
+
+            if(index < 100){
+                symbols[index] = cl;
+                strcpy(eti, "ETI");
+                sprintf(aux, "%d", index);
+                strcat(eti, aux);
+                strcpy(eti00, eti);
+                eti_counter++;
+                return eti;
+            }
+            else
+                return "ERROR";
+        }
+        else{
+            strcpy(eti, eti00);
+            return eti;
+        }
+    }
+
     while (symbols[index] != 0x0000 && index < 100){	//Busca por etiquetas ya definidas
         if (cl == symbols[index]){		//Si lo encuentra
 			strcpy(eti, "ETI");
@@ -158,7 +209,22 @@ char *getEti_p(uint16_t cl){
 			return eti;
 		}
         index++;
-
+    }
+    if(bandera == 1){
+        if(symbols[index+1] != 0x0000){  //Validación para saber si hay etiquetas después de la etiqueta con valor = 0
+            index++;
+            while (symbols[index] != 0x0000 && index < 100){
+                if (cl == symbols[index]){
+                    strcpy(eti, "ETI");
+                    sprintf(aux, "%d", index);
+                    strcat(eti, aux);
+                    return eti;
+                }
+                index++;
+            }
+        }
+        else
+            index++;
     }
 	if(index < 100){			//Agrega etiquetas no definidas
 		symbols[index] = cl;
@@ -167,30 +233,6 @@ char *getEti_p(uint16_t cl){
 		strcat(eti, aux);
         eti_counter++;
 		return eti;
-	}else
-        return "ERROR";				//Algún error
-}
-
-char *getSub_p(uint16_t cl){
-    int index = 1;
-	char aux[12];	//Todos los números enteros caben en un arreglo de 12 carcateres
-    while (subSym[index] != 0x0000 && index < 100){	//Busca por subrutinas ya definidas
-        if (cl == subSym[index]){		//Si lo encuentra
-			strcpy(subs, "SUB");
-			sprintf(aux, "%d", index); 	//Se copia el entero en un arreglo
-			strcat(subs, aux);			//Se concatena el entero con la palabra SUB
-			return subs;
-		}
-        index++;
-
-    }
-	if(index < 100){			//Agrega subrutinas no definidas
-		subSym[index] = cl;
-		strcpy(subs, "SUB");
-		sprintf(aux, "%d", index);
-		strcat(subs, aux);
-        sub_counter++;
-		return subs;
 	}else
         return "ERROR";				//Algún error
 }
@@ -661,7 +703,7 @@ char *newSwitch(char line[], char ins[]){
                 getByte(argument1, line);
                 strcpy(argument2, "");
                 strcat(ins, "+");
-                completeNewSwitch("SUB A, (", ins, argument1, argument2);
+                completeNewSwitch("SUB (", ins, argument1, argument2);
                 strcat(buffer, ")");
                 return buffer;
             case 0x9E:                                  //SBC A, (IX+d) / SBC A, (IY+d)
@@ -723,7 +765,7 @@ char *newSwitch(char line[], char ins[]){
 char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) {
 	char argument1[20] = {0};  //byte mas significativo
 	char argument2[20] = {0};  //byte menos significativo
-	int nextbyte;
+	//int nextbyte;
     char name[10];
 
 	switch(opcode){
@@ -1152,22 +1194,22 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 			return "ADC A, (HL)";
 		case 0x8F:									//  ADC A, A
 			return "ADC A, A";
-		case 0x90:									//  SUB B
+		case 0x90:									//  SUB A, B
 			return "SUB B";
-		case 0x91:									//  SUB C
+		case 0x91:									//  SUB A, C
 			return "SUB C";
-		case 0x92: 									//  SUB D
+		case 0x92: 									//  SUB A, D
 			return "SUB D";
-		case 0x93:									//  SUB E
+		case 0x93:									//  SUB A, E
 			return "SUB E";
-		case 0x94:									//  SUB H
+		case 0x94:									//  SUB A, H
 			return "SUB H";
-		case 0x95:									//  SUB L
+		case 0x95:									//  SUB A, L
 			return "SUB L";
-		case 0x96:									//  SUB (HL)
+		case 0x96:									//  SUB A, (HL)
 			return "SUB (HL)";
-		case 0x97:									//  SUB A
-			return "SUB A, A";
+		case 0x97:									//  SUB A, A
+			return "SUB A";
 		case 0x98:									//  SBC A, B
 			return "SBC A, B";
 		case 0x99:									//  SBC A, C
@@ -1278,9 +1320,9 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 			strcpy(buffer, argument1);
 			strcat(buffer, argument2);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
-            strcpy (name, getSub_p(cl));
+            strcpy (name, getEti_p(cl));
 			strcpy(buffer, "CALL NZ, ");
-            strcat(buffer, subs);
+            strcat(buffer, eti);
             return buffer;
 		case 0xC5:									//  PUSH BC
 			return "PUSH BC";
@@ -1833,9 +1875,9 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 			strcpy(buffer, argument1);
 			strcat(buffer, argument2);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
-            strcpy (name, getSub_p(cl));
+            strcpy (name, getEti_p(cl));
 			strcpy(buffer, "CALL Z, ");
-            strcat(buffer, subs);
+            strcat(buffer, eti);
             return buffer;
 		case 0xCD:									//  CALL e
 			getByte(argument2, line);
@@ -1843,9 +1885,9 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 			strcpy(buffer, argument1);
 			strcat(buffer, argument2);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
-            strcpy (name, getSub_p(cl));
+            strcpy (name, getEti_p(cl));
 			strcpy(buffer, "CALL ");
-            strcat(buffer, subs);
+            strcat(buffer, eti);
             return buffer;
 		case 0xCE:									//  ADC A, n
 			getByte(argument1, line);
@@ -1880,13 +1922,13 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 			strcpy(buffer, argument1);
 			strcat(buffer, argument2);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
-            strcpy (name, getSub_p(cl));
+            strcpy (name, getEti_p(cl));
 			strcpy(buffer, "CALL NC, ");
-            strcat(buffer, subs);
+            strcat(buffer, eti);
             return buffer;
 		case 0xD5:									//  PUSH DE
 			return "PUSH DE";
-		case 0xD6:									//  SUB n
+		case 0xD6:									//  SUB A, n
 			getByte(argument1, line);
 			strcpy(argument2, "");
 			complete("SUB ", argument1, argument2);
@@ -1919,9 +1961,9 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 			strcpy(buffer, argument1);
 			strcat(buffer, argument2);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
-            strcpy (name, getSub_p(cl));
+            strcpy (name, getEti_p(cl));
 			strcpy(buffer, "CALL C, ");
-            strcat(buffer, subs);
+            strcat(buffer, eti);
             return buffer;
 		case 0xDD:									//  ** DD **
 			strcpy(argument1, "IX");
@@ -1955,9 +1997,9 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 			strcpy(buffer, argument1);
 			strcat(buffer, argument2);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
-            strcpy (name, getSub_p(cl));
+            strcpy (name, getEti_p(cl));
 			strcpy(buffer, "CALL PO, ");
-            strcat(buffer, subs);
+            strcat(buffer, eti);
             return buffer;
 		case 0xE5:									//  PUSH HL
 			return "PUSH HL";
@@ -1990,9 +2032,9 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 			strcpy(buffer, argument1);
 			strcat(buffer, argument2);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
-            strcpy (name, getSub_p(cl));
+            strcpy (name, getEti_p(cl));
 			strcpy(buffer, "CALL PE, ");
-            strcat(buffer, subs);
+            strcat(buffer, eti);
             return buffer;
 		case 0xED:									//  ** ED **
 			getByte(byte, line);
@@ -2272,9 +2314,9 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 			strcpy(buffer, argument1);
 			strcat(buffer, argument2);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
-            strcpy (name, getSub_p(cl));
+            strcpy (name, getEti_p(cl));
 			strcpy(buffer, "CALL P, ");
-            strcat(buffer, subs);
+            strcat(buffer, eti);
             return buffer;
 		case 0xF5:									//  PUSH AF
 			return "PUSH AF";
@@ -2307,9 +2349,9 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 			strcpy(buffer, argument1);
 			strcat(buffer, argument2);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
-            strcpy (name, getSub_p(cl));
+            strcpy (name, getEti_p(cl));
 			strcpy(buffer, "CALL M, ");
-            strcat(buffer, subs);
+            strcat(buffer, eti);
             return buffer;
 		case 0xFD:									//  ** FD **
 			strcpy(argument1, "IY");
