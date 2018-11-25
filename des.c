@@ -11,6 +11,7 @@ char *newSwitch(char [], char []);
 int countLines(char *);
 char *getLines(char *, int);
 char *getEti_p(uint16_t);
+uint16_t getCL(char *);
 
 
 int i;  					   //contador
@@ -51,7 +52,9 @@ int main(int argc, char **argv) {
     uint16_t CL_global[1000] = {0x0000}; //Aquí guarda el contador de localidades de cada línea.
     int line_counter = 1; //Ayuda a generar el arreglo con todos los valores del contador de localodades.
 
-
+	CL_p = getCL(argv[1]);
+	CL_n = CL_p;
+	
     strcpy(fileA, fileH);
     fileA[strlen(fileA)-3] = 'a';
     fileA[strlen(fileA)-2] = 's';
@@ -171,6 +174,24 @@ int main(int argc, char **argv) {
     return EXIT_SUCCESS;
 }
 
+uint16_t getCL(char *filename){
+		FILE *file = fopen(filename, "r");
+	if (file == NULL){
+        puts("Unable to open the file");
+    }
+	else{
+		char CL_local[5] = {0};
+		char line[46];
+		fgets(line, sizeof(line), file);
+		CL_local[0] = line[3];
+		CL_local[1] = line[4];
+		CL_local[2] = line[5];
+		CL_local[3] = line[6];
+		fclose(file);
+		return (uint16_t) strtol(CL_local, NULL, 16);;
+	}
+	return 0x00;
+}
 
 char *getEti_p(uint16_t cl){
     int index = 1;
