@@ -1,3 +1,5 @@
+    CPU "Z80.TBL"
+    HOF "INT8"
     IN B,(C)
     OUT (C),B
     SBC HL,BC

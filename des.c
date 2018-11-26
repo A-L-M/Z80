@@ -1688,7 +1688,7 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 				case 0x75:									//  BIT 6, L
 					return "BIT 6, L";
 				case 0x76:									//  BIT 6, (HL)
-					return "BIT 6 (HL)";
+					return "BIT 6, (HL)";
 				case 0x77:									//  BIT 6, A
 					return "BIT 6, A";
 				case 0x78:									//  BIT 7, B
@@ -1956,7 +1956,7 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 				case 0xFB:									// 	SET 7, E
 					return "SET 7, E";
 				case 0xFC:									//  SET 7, H
-					return "SER 7, H";
+					return "SET 7, H";
 				case 0xFD:									//  SET 7, L
 					return "SET 7, L";
 				case 0xFE:									//  SET 7, (HL)
