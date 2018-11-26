@@ -2030,38 +2030,6 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 			opcode = (int) strtol(byte, NULL, 16);
 			// switch para ED
             switch(opcode){
-                case 0x00:
-                    return "MOS_QUIT";
-                case 0x01:
-                    return "MOS_CLI";
-                case 0x02:
-                    return "MOS_BYTE";
-                case 0x03:
-                    return "MOS_WORD";
-                case 0x04:
-                    return "MOS_WRCH";
-                case 0x05:
-                    return "MOS_RDCH";
-                case 0x06:
-                    return "MOS_FILE";
-                case 0x07:
-                    return "MOS_ARGS";
-                case 0x08:
-                    return "MOS_BGET";
-                case 0x09:
-                    return "MOS_BPUT";
-                case 0x0A:
-                    return "MOS_GBPB";
-                case 0x0B:
-                    return "MOS_FIND";
-                case 0x0C:
-                    return "MOS_FF0C";
-                case 0x0D:
-                    return "MOS_FF0D";
-                case 0x0E:
-                    return "MOS_FF0E";
-                case 0x0F:
-                    return "MOS_FF0F";
                 case 0x40:
                 	return "IN B,(C)";
                 case 0x41:
@@ -2094,12 +2062,8 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
                     complete("LD BC,(", argument2, argument1);
                     strcat(buffer, ")");
                     return buffer;
-                case 0x4C:
-                    return "[neg]";
                 case 0x4D:
                     return "RETI";
-                case 0x4E:
-                    return "[im0]";
                 case 0x4F:
                     return "LD R,A";
                 case 0x50:
@@ -2114,10 +2078,6 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
                     complete("LD (", argument2, argument1);
                     strcat(buffer, "), DE");
                     return buffer;
-                case 0x54:
-                    return "[neg]";
-                case 0x55:
-                    return "[retn]";
                 case 0x56:
                     return "IM 1";
                 case 0x57:
@@ -2134,10 +2094,6 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
                     complete("LD DE,(", argument2, argument1);
                     strcat(buffer, ")");
                     return buffer;
-                case 0x5C:
-                    return "[neg]";
-                case 0x5D:
-                    return "[reti]";
                 case 0x5E:
                     return "IM 2";
                 case 0x5F:
@@ -2154,12 +2110,6 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
                     complete("LD (", argument2, argument1);
                     strcat(buffer, "), HL");
                     return buffer;
-                case 0x64:
-                    return "[neg]";
-                case 0x65:
-                    return "[retn]";
-                case 0x66:
-                    return "[im0]";
                 case 0x67:
                     return "RRD";
                 case 0x68:
@@ -2174,18 +2124,8 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
                     complete("LD HL,(", argument2, argument1);
                     strcat(buffer, ")");
                     return buffer;
-                case 0x6C:
-                    return "[neg]";
-                case 0x6D:
-                    return "[reti]";
-                case 0x6E:
-                    return "[im0]";
                 case 0x6F:
                     return "RLD";
-                case 0x70:
-                    return "IN F,(C)";
-                case 0x71:
-                	return "OUT (C),F";
                 case 0x72:
                     return "SBC HL,SP";
                 case 0x73:
@@ -2194,14 +2134,6 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
                     complete("LD (", argument2, argument1);
                     strcat(buffer, "), SP");
                     return buffer;
-                case 0x74:
-                    return "[neg]";
-                case 0x75:
-                    return "[retn]";
-                case 0x76:
-                    return "[im1]";
-                case 0x77:
-                    return "[ld i,i?]";
                 case 0x78:
                     return "IN A,(C)";
                 case 0x79:
@@ -2214,30 +2146,18 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
                     complete("LD SP,(", argument2, argument1);
                     strcat(buffer, ")");
                     return buffer;
-                case 0x7C:
-                    return "[neg]";
-                case 0x7D:
-                    return "[reti]";
-                case 0x7E:
-                    return "[im2]";
-                case 0x7F:
-                    return "[ld r,r?]";
                 case 0xA0:
                     return "LDI";
                 case 0xA1:
                     return "CPI";
                 case 0xA2:
                     return "INI";
-                case 0xA3:
-                    return "OTI";
                 case 0xA8:
                     return "LDD";
                 case 0xA9:
                     return "CPD";
                 case 0xAA:
                     return "IND";
-                case 0xAB:
-                    return "OTD";
                 case 0xB0:
                     return "LDIR";
                 case 0xB1:
@@ -2254,22 +2174,6 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
                     return "INDR";
                 case 0xBB:
                     return "OTDR";
-                case 0xF8:
-                    return "[z80]";
-                case 0xF9:
-                    return "[z80]";
-                case 0xFA:
-                    return"[z80]";
-                case 0xFB:
-                    return "ED_LOAD";
-                case 0xFC:
-                    return "[z80]";
-                case 0xFD:
-                    return "[z80]";
-                case 0xFE:
-                    return "[z80]";
-                case 0xFF:
-                    return "ED_DOS";
 				default:
 					printf("Error: formato incorrecto");
 					return "ERROR";
