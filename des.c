@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
     uint16_t CL_global[1000] = {0x0000}; //Aquí guarda el contador de localidades de cada línea.
     int line_counter = 1; //Ayuda a generar el arreglo con todos los valores del contador de localodades.
 
-	CL_p = getCL(argv[1]);
+	CL_p = getCL(argv[1]);  // getCL nos da el valor del contador de localidades, que sera diferente de 0 en caso de que se use ORG
 	CL_n = CL_p;
 	
     strcpy(fileA, fileH);
@@ -69,10 +69,10 @@ int main(int argc, char **argv) {
             aux = i;
             CL_p = CL_n;
             CL_global[line_counter] = CL_n; //Se guarda el contador de localidades en el arreglo
-            getByte(byte, total_bytes);
-            opcode = (int) strtol(byte, NULL, 16);
-            mnemonico = getInstruction(opcode, total_bytes, byte, CL_p);
-            aux = (i - aux)/2;
+            getByte(byte, total_bytes); // se almacena el siguiente byte del arreglo de bytes
+            opcode = (int) strtol(byte, NULL, 16); // se convierte a decimal, leyendo el byte (string) en base 16
+            mnemonico = getInstruction(opcode, total_bytes, byte, CL_p); // se manda el codigo de operacion y se regresa el mnemonico correspondiente
+            aux = (i - aux)/2;  //valor de CL de la instruccion
             CL_n = CL_n + aux;
 
             printf("%X\t", CL_p);
@@ -90,21 +90,6 @@ int main(int argc, char **argv) {
         }
         fclose(f1);
     }
-
-    /*
-    for (int count = 1; count < eti_counter; count++)
-    {
-
-        printf("%X\n", symbols[count]);
-    }
-
-    for (int count = 1; count < line_counter; count++)
-    {
-
-        printf("%X\n", CL_global[count]);
-    }
-
-    */
 
     char eti_aux[20]; //Buffer para generar etiquetas.
 
@@ -174,7 +159,7 @@ int main(int argc, char **argv) {
     return EXIT_SUCCESS;
 }
 
-uint16_t getCL(char *filename){
+uint16_t getCL(char *filename){  //se toma en cuenta que el programa no empiece en 0000H
 		FILE *file = fopen(filename, "r");
 	if (file == NULL){
         puts("Unable to open the file");
@@ -183,19 +168,19 @@ uint16_t getCL(char *filename){
 		char CL_local[5] = {0};
 		char line[46];
 		fgets(line, sizeof(line), file);
-		CL_local[0] = line[3];
+		CL_local[0] = line[3];  //se guarda CL en arreglo
 		CL_local[1] = line[4];
 		CL_local[2] = line[5];
 		CL_local[3] = line[6];
 		fclose(file);
-		return (uint16_t) strtol(CL_local, NULL, 16);;
+		return (uint16_t) strtol(CL_local, NULL, 16);; //se regresa CL en valor hexadecimal
 	}
 	return 0x00;
 }
 
 char *getEti_p(uint16_t cl){
     int index = 1;
-	char aux[12];	//Todos los números enteros caben en un arreglo de 12 carcateres
+	char aux[12];	//Todos los números enteros caben en un arreglo de 12 caracteres
 
     if(cl == 0x00){
         if(bandera == 0){
@@ -258,13 +243,13 @@ char *getEti_p(uint16_t cl){
         return "ERROR";				//Algún error
 }
 
-void getByte(char argument[], char line[]){
+void getByte(char argument[], char line[]){  //se guarda siguiente byte, se modifica i
 	argument[0] = line[i];
 	argument[1] = line[i+1];
 	i += 2;
 }
 
-int countLines(char * filename){
+int countLines(char * filename){  //cuenta las lineas que contienen informacion/datos
 	FILE *file = fopen(filename, "r");
 	if (file == NULL){
         puts("Unable to open the file");
@@ -284,25 +269,25 @@ int countLines(char * filename){
 	return 0;
 }
 
-char * getLines(char * filename, int num_lines){
+char * getLines(char * filename, int num_lines){  //junta todas las lineas que contienen informacion/datos en un solo arreglo
 	FILE *file = fopen(filename, "r");
 	if (file == NULL){
         puts("Unable to open the file");
     }
 	else{
 		char line[46], byte[3];
-		char *total_bytes = malloc((num_lines*32)*sizeof(char));
+		char *total_bytes = malloc((num_lines*32)*sizeof(char));  //asignacion de memoria dependiendo del total de bytes
 		int k,j, dbytes_in_line;
 		int index = 0;
 		for(k = 0; k < num_lines; k++){
 			fgets(line, sizeof(line), file);
-			byte[0] = line[1];
+			byte[0] = line[1];  //lee cantidad de bytes que contiene la linea
 			byte[1] = line[2];
 			dbytes_in_line = (int) strtol(byte, NULL, 16);  //Toma la cadena almacenada en byte[] y la convierte a int, leyendo en base 16
 			num_total_bytes = num_total_bytes + dbytes_in_line;
             dbytes_in_line = (dbytes_in_line * 2) + 9;  //dos digitos por byte, +9 digitos que se ignoran al inicio
             for(j = 9; j < dbytes_in_line; j++, index++){
-            	total_bytes[index] = line[j];
+            	total_bytes[index] = line[j];  //se almacenan los bytes en el arreglo
 			}
 		}
 		fclose(file);
@@ -331,7 +316,7 @@ void completeNewSwitch(const char *arg1, char option[], char arg2[], char arg3[]
 	strcpy(buffer, aux);
 }
 
-char *newSwitch(char line[], char ins[]){
+char *newSwitch(char line[], char ins[]){  //contiene instrucciones con IX o IY
     char argument1[20] = {0};
 	char argument2[20] = {0};
     int opbyte;
@@ -783,7 +768,7 @@ char *newSwitch(char line[], char ins[]){
     return "";
 }
 
-char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) {
+char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) {  //contiene todas las demas instrucciones
 	char argument1[20] = {0};  //byte mas significativo
 	char argument2[20] = {0};  //byte menos significativo
 	//int nextbyte;
