@@ -92,8 +92,8 @@ int main(int argc, char **argv) {
             aux = (i - aux)/2;
             CL_n = CL_n + aux;
 
-            //printf("%X\t", CL_p);
-            //printf("%s\n", mnemonico);
+            printf("%X\t", CL_p);
+            printf("%s\n", mnemonico);
 
             if(imn == 0)
                 fprintf(f1, "%s", mnemonico);
@@ -140,42 +140,31 @@ int main(int argc, char **argv) {
 
     else{
 
-        if(eti_counter != 1){
+        for(c = 1; c < eti_counter; c++){ // Recorre la tabla de simbolos para encontrar las direcciones a las que apuntan las etiquetas
+            for (b = 1; b < line_counter; b++){ //Recorre el arreglo del contador de localidades
 
-            for(c = 1; c < eti_counter; c++){ // Recorre la tabla de simbolos para encontrar las direcciones a las que apuntan las etiquetas
-                for (b = 1; b < line_counter; b++){ //Recorre el arreglo del contador de localidades
-
-                    fgets(line, sizeof(line), f1);
-
-                    if(symbols[c] == CL_global[b]){
-                        strcpy(eti, "ETI");
-                        sprintf(eti_aux, "%d", c);  //Se copia el entero en un arreglo
-                        strcat(eti, eti_aux);           //Se concatena el entero con la palabra ETI
-                        //printf("%s\t", eti);
-                        //printf("%X\n", symbols[c]);
-                        strcat(eti, space);
-
-                        strcat(eti, line);
-                        fprintf(f2, "%s", eti);
-                    }
-                    else{
-                        fprintf(f2, "%s", line);
-                    }
-                }
-                rewind(f1);
-                rewind(f2);
-                while(!feof(f2)){
-                   fgets(line, sizeof(line), f2);
-                    fprintf(f1, "%s",line);
-                }
-                rewind(f1);
-                rewind(f2);
-            }
-
-        }else{
-            while(!feof(f1)){
                 fgets(line, sizeof(line), f1);
-                fprintf(f2, "%s",line);
+
+                if(symbols[c] == CL_global[b]){
+                    strcpy(eti, "ETI");
+                    sprintf(eti_aux, "%d", c);  //Se copia el entero en un arreglo
+                    strcat(eti, eti_aux);           //Se concatena el entero con la palabra ETI
+                    printf("%s\t", eti);
+                    printf("%X\n", symbols[c]);
+                    strcat(eti, space);
+
+                    strcat(eti, line);
+                    fprintf(f2, "%s", eti);
+                }
+                else{
+                    fprintf(f2, "%s", line);
+                }
+            }
+            rewind(f1);
+            rewind(f2);
+            while(!feof(f2)){
+               fgets(line, sizeof(line), f2);
+                fprintf(f1, "%s",line);
             }
             rewind(f1);
             rewind(f2);

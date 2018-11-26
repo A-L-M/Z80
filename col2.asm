@@ -1,0 +1,78 @@
+CPU "Z80.TBL"
+HOF "INT8"
+ORG 0000H
+    ADD IX, BC
+    ADD IX, DE
+    LD IX, 1000H
+    LD (1000H), IX
+    INC IX
+    ADD IX, IX
+    LD IX, (1000H)
+    DEC IX
+    INC (IX+2H)
+    DEC (IX+2H)
+    LD (IX+2H), 55H
+    ADD IX, SP
+    LD B, (IX+0)
+    LD C, (IX+0)
+    LD D, (IX+0)
+    LD E, (IX+0)
+    LD H, (IX+2)
+    LD L, (IX+2)
+    LD (IX+2), B
+    LD (IX+2), C
+    LD (IX+2), D
+    LD (IX+2), E
+    LD (IX+2), H
+    LD (IX+2), L
+    LD (IX+2), A
+    LD A, (IX+0)
+    ADD A, (IX+0)
+    ADC A, (IX+0)
+    SUB (IX+0)
+    AND (IX+0)
+    XOR (IX+0)
+    OR (IX+0)
+    CP (IX+0)
+    POP IX
+    EX (SP), IX
+    PUSH IX
+    JP (IX)
+    ;
+    ADD IY, BC
+    ADD IY, DE
+    LD IY, 1000H
+    LD (1000H), IY
+    INC IY
+    ADD IY, IY
+    LD IY, (1000H)
+    DEC IY
+    INC (IY+2H)
+    DEC (IY+2H)
+    LD (IY+2H), 55H
+    ADD IY, SP
+    LD B, (IY+0)
+    LD C, (IY+0)
+    LD D, (IY+0)
+    LD E, (IY+0)
+    LD H, (IY+2)
+    LD L, (IY+2)
+    LD (IY+2), B
+    LD (IY+2), C
+    LD (IY+2), D
+    LD (IY+2), E
+    LD (IY+2), H
+    LD (IY+2), L
+    LD (IY+2), A
+    LD A, (IY+0)
+    ADD A, (IY+0)
+    ADC A, (IY+0)
+    SUB (IY+0)
+    AND (IY+0)
+    XOR (IY+0)
+    OR (IY+0)
+    CP (IY+0)
+    POP IY
+    EX (SP), IY
+    PUSH IY
+    JP (IY)
