@@ -1,0 +1,13 @@
+ETI1: NOP
+    NOP
+    JR ETI1
+    NOP
+    JR ETI2
+    JP ETI3
+    LD A, (0000H)
+    NOP
+ETI2: NOP
+    JR ETI4
+ETI4: JR ETI5
+ETI5: HALT
+ETI3: LD A, 00H

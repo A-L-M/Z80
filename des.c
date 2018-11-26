@@ -108,21 +108,6 @@ int main(int argc, char **argv) {
         fclose(f1);
     }
 
-    /*
-    for (int count = 1; count < eti_counter; count++)
-    {
-
-        printf("%X\n", symbols[count]);
-    }
-
-    for (int count = 1; count < line_counter; count++)
-    {
-
-        printf("%X\n", CL_global[count]);
-    }
-
-    */
-
     char eti_aux[20]; //Buffer para generar etiquetas.
 
     int c, b;
@@ -198,12 +183,36 @@ int main(int argc, char **argv) {
         fclose(f2);
         remove("temp.asm");
     }
+    f1 = fopen(fileA, "r+");
+    if (f1 == NULL){
+        puts("Unable to open the file");
+    }
+    f2 = fopen("temp.asm", "w+");
+    if (f2 == NULL){
+        puts("Unable to open the file");
+    }
+    else{
+    	fprintf(f2, "    CPU \"Z80.TBL\"\n");
+    	fprintf(f2, "    HOF \"INT8\"\n");
+            while(!feof(f1)){
+                fgets(line, sizeof(line), f1);
+                fprintf(f2, "%s",line);
+            }
+            rewind(f1);
+            rewind(f2);
+        fclose(f1);
+        fclose(f2);
+        remove(fileA);
+        rename("temp.asm", fileA);
+		}
+		
+        //remove("temp.asm");
 
     return EXIT_SUCCESS;
 }
 
-uint16_t getCL(char *filename){
-    FILE *file = fopen(filename, "r");
+uint16_t getCL(char *filename){  //se toma en cuenta que el programa no empiece en 0000H
+	FILE *file = fopen(filename, "r");
 	if (file == NULL){
         puts("Unable to open the file");
     }
@@ -211,12 +220,12 @@ uint16_t getCL(char *filename){
 		char CL_local[5] = {0};
 		char line[46];
 		fgets(line, sizeof(line), file);
-		CL_local[0] = line[3];
+		CL_local[0] = line[3];  //se guarda CL en arreglo
 		CL_local[1] = line[4];
 		CL_local[2] = line[5];
 		CL_local[3] = line[6];
 		fclose(file);
-		return (uint16_t) strtol(CL_local, NULL, 16);
+		return (uint16_t) strtol(CL_local, NULL, 16); //se regresa CL en valor hexadecimal
 	}
 	return 0x00;
 }
@@ -286,13 +295,13 @@ char *getEti_p(uint16_t cl){
 
 }
 
-void getByte(char argument[], char line[]){
+void getByte(char argument[], char line[]){  //se guarda siguiente byte, se modifica i
 	argument[0] = line[i];
 	argument[1] = line[i+1];
 	i += 2;
 }
 
-int countLines(char * filename){
+int countLines(char * filename){ //cuenta las lineas que contienen informacion/datos
 	FILE *file = fopen(filename, "r");
 	if (file == NULL){
         puts("Unable to open the file");
@@ -312,25 +321,25 @@ int countLines(char * filename){
 	return 0;
 }
 
-char * getLines(char * filename, int num_lines){
+char * getLines(char * filename, int num_lines){  //junta todas las lineas que contienen informacion/datos en un solo arreglo
 	FILE *file = fopen(filename, "r");
 	if (file == NULL){
         puts("Unable to open the file");
     }
 	else{
 		char line[46], byte[3];
-		char *total_bytes = malloc((num_lines*32)*sizeof(char));
+		char *total_bytes = malloc((num_lines*32)*sizeof(char));  //asignacion de memoria dependiendo del total de bytes
 		int k,j, dbytes_in_line;
 		int index = 0;
 		for(k = 0; k < num_lines; k++){
 			fgets(line, sizeof(line), file);
-			byte[0] = line[1];
+			byte[0] = line[1];  //lee cantidad de bytes que contiene la linea
 			byte[1] = line[2];
 			dbytes_in_line = (int) strtol(byte, NULL, 16);  //Toma la cadena almacenada en byte[] y la convierte a int, leyendo en base 16
 			num_total_bytes = num_total_bytes + dbytes_in_line;
             dbytes_in_line = (dbytes_in_line * 2) + 9;  //dos digitos por byte, +9 digitos que se ignoran al inicio
             for(j = 9; j < dbytes_in_line; j++, index++){
-            	total_bytes[index] = line[j];
+            	total_bytes[index] = line[j];  //se almacenan los bytes en el arreglo
 			}
 		}
 		fclose(file);
@@ -359,7 +368,7 @@ void completeNewSwitch(const char *arg1, char option[], char arg2[], char arg3[]
 	strcpy(buffer, aux);
 }
 
-char *newSwitch(char line[], char ins[]){
+char *newSwitch(char line[], char ins[]){  //contiene instrucciones con IX o IY
     char argument1[20] = {0};
 	char argument2[20] = {0};
     int opbyte;
@@ -409,12 +418,6 @@ char *newSwitch(char line[], char ins[]){
                         strcpy(argument2, "");
                         strcat(ins, "+");
                         completeNewSwitch("SRA (", ins, argument1, argument2);
-                        strcat(buffer, ")");
-                        return buffer;
-                    case 0x36:                                  //SLS (IX+d) / SRA (IY+d)
-                        strcpy(argument2, "");
-                        strcat(ins, "+");
-                        completeNewSwitch("SLS (", ins, argument1, argument2);
                         strcat(buffer, ")");
                         return buffer;
 					case 0x3E:                                  //SRL (IX+d) / SRA (IY+d)
@@ -636,6 +639,11 @@ char *newSwitch(char line[], char ins[]){
                 strcpy(buffer, "LD (");
                 strcat(buffer, ins);
                 return buffer;
+            case 0x39:                                  //ADD IX, SP / ADD IY, SP
+            	strcpy(buffer, "ADD ");
+            	strcat(buffer, ins);
+            	strcat(buffer, ", SP");
+                return buffer;
             case 0x46:                                  //LD B, (IX+d) / LD B, (IY+d)
                 getByte(argument1, line);
                 strcpy(argument2, "");
@@ -675,7 +683,7 @@ char *newSwitch(char line[], char ins[]){
                 getByte(argument1, line);
                 strcpy(argument2, "");
                 strcat(ins, "+");
-                completeNewSwitch("LD H, (", ins, argument1, argument2);
+                completeNewSwitch("LD L, (", ins, argument1, argument2);
                 strcat(buffer, ")");
                 return buffer;
             case 0x70:                                  //LD (IX+d), B / LD (IY+d), B
@@ -711,7 +719,7 @@ char *newSwitch(char line[], char ins[]){
                 strcpy(argument2, "");
                 strcat(ins, "+");
                 completeNewSwitch("LD (", ins, argument1, argument2);
-                strcat(buffer, "), E");
+                strcat(buffer, "), H");
                 return buffer;
             case 0x75:                                  //LD (IX+d), L / LD (IY+d), L
                 getByte(argument1, line);
@@ -748,7 +756,7 @@ char *newSwitch(char line[], char ins[]){
                 completeNewSwitch("ADC A, (", ins, argument1, argument2);
                 strcat(buffer, ")");
                 return buffer;
-            case 0x96:                                  //SUB A, (IX+d) / SUB A, (IY+d)
+            case 0x96:                                  //SUB (IX+d) / SUB (IY+d)
                 getByte(argument1, line);
                 strcpy(argument2, "");
                 strcat(ins, "+");
@@ -1555,22 +1563,6 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 					return "SRA (HL)";
 				case 0x2F:									//  SRA
 					return "SRA A";
-				case 0x30:									//  SLS B
-					return "SLS B";
-				case 0x31:									//  SLS C
-					return "SLS C";
-				case 0x32: 									//  SLS D
-					return "SLS D";
-				case 0x33:									//  SLS E
-					return "SLS E";
-				case 0x34:									//  SLS H
-					return "SLS H";
-				case 0x35:									//  SLS L
-					return "SLS L";
-				case 0x36:									//  SLS (HL)
-					return "SLS (HL)";
-				case 0x37:									//  SLS A
-					return "SLS A";
 				case 0x38:									//  SRL B
 					return "SRL B";
 				case 0x39:									//	SRL C
@@ -2147,38 +2139,6 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 			opcode = (int) strtol(byte, NULL, 16);
 			// switch para ED
             switch(opcode){
-                case 0x00:
-                    return "MOS_QUIT";
-                case 0x01:
-                    return "MOS_CLI";
-                case 0x02:
-                    return "MOS_BYTE";
-                case 0x03:
-                    return "MOS_WORD";
-                case 0x04:
-                    return "MOS_WRCH";
-                case 0x05:
-                    return "MOS_RDCH";
-                case 0x06:
-                    return "MOS_FILE";
-                case 0x07:
-                    return "MOS_ARGS";
-                case 0x08:
-                    return "MOS_BGET";
-                case 0x09:
-                    return "MOS_BPUT";
-                case 0x0A:
-                    return "MOS_GBPB";
-                case 0x0B:
-                    return "MOS_FIND";
-                case 0x0C:
-                    return "MOS_FF0C";
-                case 0x0D:
-                    return "MOS_FF0D";
-                case 0x0E:
-                    return "MOS_FF0E";
-                case 0x0F:
-                    return "MOS_FF0F";
                 case 0x40:
                 	return "IN B,(C)";
                 case 0x41:
@@ -2211,12 +2171,8 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
                     complete("LD BC,(", argument2, argument1);
                     strcat(buffer, ")");
                     return buffer;
-                case 0x4C:
-                    return "[neg]";
                 case 0x4D:
                     return "RETI";
-                case 0x4E:
-                    return "[im0]";
                 case 0x4F:
                     return "LD R,A";
                 case 0x50:
@@ -2231,10 +2187,6 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
                     complete("LD (", argument2, argument1);
                     strcat(buffer, "), DE");
                     return buffer;
-                case 0x54:
-                    return "[neg]";
-                case 0x55:
-                    return "[retn]";
                 case 0x56:
                     return "IM 1";
                 case 0x57:
@@ -2251,10 +2203,6 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
                     complete("LD DE,(", argument2, argument1);
                     strcat(buffer, ")");
                     return buffer;
-                case 0x5C:
-                    return "[neg]";
-                case 0x5D:
-                    return "[reti]";
                 case 0x5E:
                     return "IM 2";
                 case 0x5F:
@@ -2271,12 +2219,6 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
                     complete("LD (", argument2, argument1);
                     strcat(buffer, "), HL");
                     return buffer;
-                case 0x64:
-                    return "[neg]";
-                case 0x65:
-                    return "[retn]";
-                case 0x66:
-                    return "[im0]";
                 case 0x67:
                     return "RRD";
                 case 0x68:
@@ -2291,18 +2233,8 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
                     complete("LD HL,(", argument2, argument1);
                     strcat(buffer, ")");
                     return buffer;
-                case 0x6C:
-                    return "[neg]";
-                case 0x6D:
-                    return "[reti]";
-                case 0x6E:
-                    return "[im0]";
                 case 0x6F:
                     return "RLD";
-                case 0x70:
-                    return "IN F,(C)";
-                case 0x71:
-                	return "OUT (C),F";
                 case 0x72:
                     return "SBC HL,SP";
                 case 0x73:
@@ -2311,14 +2243,6 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
                     complete("LD (", argument2, argument1);
                     strcat(buffer, "), SP");
                     return buffer;
-                case 0x74:
-                    return "[neg]";
-                case 0x75:
-                    return "[retn]";
-                case 0x76:
-                    return "[im1]";
-                case 0x77:
-                    return "[ld i,i?]";
                 case 0x78:
                     return "IN A,(C)";
                 case 0x79:
@@ -2331,30 +2255,18 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
                     complete("LD SP,(", argument2, argument1);
                     strcat(buffer, ")");
                     return buffer;
-                case 0x7C:
-                    return "[neg]";
-                case 0x7D:
-                    return "[reti]";
-                case 0x7E:
-                    return "[im2]";
-                case 0x7F:
-                    return "[ld r,r?]";
                 case 0xA0:
                     return "LDI";
                 case 0xA1:
                     return "CPI";
                 case 0xA2:
                     return "INI";
-                case 0xA3:
-                    return "OTI";
                 case 0xA8:
                     return "LDD";
                 case 0xA9:
                     return "CPD";
                 case 0xAA:
                     return "IND";
-                case 0xAB:
-                    return "OTD";
                 case 0xB0:
                     return "LDIR";
                 case 0xB1:
@@ -2371,22 +2283,6 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
                     return "INDR";
                 case 0xBB:
                     return "OTDR";
-                case 0xF8:
-                    return "[z80]";
-                case 0xF9:
-                    return "[z80]";
-                case 0xFA:
-                    return"[z80]";
-                case 0xFB:
-                    return "ED_LOAD";
-                case 0xFC:
-                    return "[z80]";
-                case 0xFD:
-                    return "[z80]";
-                case 0xFE:
-                    return "[z80]";
-                case 0xFF:
-                    return "ED_DOS";
 				default:
 					printf("Error: formato incorrecto");
 					return "ERROR";
