@@ -1,3 +1,11 @@
+/*
+    Elaborado por:
+        Cabrera Beltrán Héctor Eduardo
+        López Martínez Andrés
+        Morales Tellez Carlos Gamaliel
+        Pérez Quiroz Miguel Ángel
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -49,7 +57,6 @@ int main(int argc, char **argv) {
 	strcpy(total_bytes, temp);
 	free(temp); // se libera memoria asignada dentro de la funcion getLines()
 
-    //int num_of_eti = 0;
     uint16_t CL_global[1000] = {0x0000}; //Aquí guarda el contador de localidades de cada línea.
     int line_counter = 1; //Ayuda a generar el arreglo con todos los valores del contador de localodades.
 
@@ -92,9 +99,6 @@ int main(int argc, char **argv) {
             aux = (i - aux)/2;
             CL_n = CL_n + aux;
 
-            //printf("%X\t", CL_p);
-            //printf("%s\n", mnemonico);
-
             if(imn == 0)
                 fprintf(f1, "%s", mnemonico);
             else{
@@ -136,8 +140,6 @@ int main(int argc, char **argv) {
                         strcpy(eti, "ETI");
                         sprintf(eti_aux, "%d", c);  //Se copia el entero en un arreglo
                         strcat(eti, eti_aux);           //Se concatena el entero con la palabra ETI
-                        //printf("%s\t", eti);
-                        //printf("%X\n", symbols[c]);
                         strcat(eti, space);
 
                         strcat(eti, line);
@@ -205,8 +207,6 @@ int main(int argc, char **argv) {
         remove(fileA);
         rename("temp.asm", fileA);
 		}
-		
-        //remove("temp.asm");
 
     return EXIT_SUCCESS;
 }
@@ -822,7 +822,6 @@ char *newSwitch(char line[], char ins[]){  //contiene instrucciones con IX o IY
 char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) {
 	char argument1[20] = {0};  //byte mas significativo
 	char argument2[20] = {0};  //byte menos significativo
-	//int nextbyte;
     char name[10];
     uint16_t cl;
 
@@ -1018,17 +1017,8 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 
 			if(cl > 0xFF){
                 sprintf(argument1, "%X", cl);
-                //sprintf(clEti, "%X", cl);
-                //printf("\n\n%X\n\n", cl);//*********************
-                /*
-                argument2[0] = clEti[0];
-                argument2[1] = clEti[1];
-                argument2[2] = argument1[strlen(argument1)-2];
-                argument2[3] = argument1[strlen(argument1)-1];
-                */
                 strcpy(argument2, argument1);
                 cl = (uint16_t)strtol(argument2, NULL, 16);
-                //printf("\n\n%X\n\n", cl);//*********************
 			}
             strcpy (name, getEti_p(cl));
 			strcpy(buffer, "JR Z, ");
