@@ -1460,22 +1460,6 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 					return "SRA (HL)";
 				case 0x2F:									//  SRA
 					return "SRA A";
-				case 0x30:									//  SLS B
-					return "SLS B";
-				case 0x31:									//  SLS C
-					return "SLS C";
-				case 0x32: 									//  SLS D
-					return "SLS D";
-				case 0x33:									//  SLS E
-					return "SLS E";
-				case 0x34:									//  SLS H
-					return "SLS H";
-				case 0x35:									//  SLS L
-					return "SLS L";
-				case 0x36:									//  SLS (HL)
-					return "SLS (HL)";
-				case 0x37:									//  SLS A
-					return "SLS A";
 				case 0x38:									//  SRL B
 					return "SRL B";
 				case 0x39:									//	SRL C
