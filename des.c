@@ -17,9 +17,9 @@ uint16_t getCL(char *);
 int i;  					   //contador
 int num_total_bytes = 0; 	   // numero total de bytes que abarca el programa
 char buffer[20];  			   //almacenamiento temporal para retorno en getInstruction
-uint16_t symbols[1000] = {0x0000};   //Tabla de simbolos
-uint16_t cl;				   //Contador de localidades asociado a las etiquetas
-char eti[100];				   //Nombres de las etiquetas
+uint16_t symbols[1000] = {0x0000};   //tabla de simbolos
+char clEti[6] = {0};				   //contador de localidades asociado a las etiquetas
+char eti[100];				   //nombres de las etiquetas
 char eti00[100];               //nombre etiqueta con valor = 0
 int eti_counter = 1;
 int bandera = 0;                  //bandera para saber si hay etiqueta con valor = 0
@@ -37,6 +37,7 @@ int main(int argc, char **argv) {
 	int imn = 0;  //índice para escribir mnemonicos en archivo
     uint16_t CL_n = 0x0000;
     uint16_t CL_p = 0x0000;
+    char clEtiTemp[6] = {0};  //variable para almacenar temporalmente el valor de CL
 
     strcpy(fileH, argv[1]);
 	num_lines = countLines(fileH);  // countLines regresa el numero de lineas CON INSTRUCCIONES (no cuenta la ultima)
@@ -54,7 +55,7 @@ int main(int argc, char **argv) {
 
 	CL_p = getCL(argv[1]);
 	CL_n = CL_p;
-	
+
     strcpy(fileA, fileH);
     fileA[strlen(fileA)-3] = 'a';
     fileA[strlen(fileA)-2] = 's';
@@ -68,6 +69,22 @@ int main(int argc, char **argv) {
         for(i = 0; i < num_total_bytes*2;){
             aux = i;
             CL_p = CL_n;
+
+            //**Se determina el primer byte de CL para mandar a JR y DJNZ el valor del primer byte donde se ubicarán las etiquetas
+            if(CL_p < 0X1000){
+                if(CL_p < 0X100){
+                    clEti[0] = '0';
+                    clEti[1] = '0';
+                }
+                else{
+                    sprintf(clEtiTemp, "%X", CL_p);
+                    clEti[0] = '0';
+                    clEti[1] = clEtiTemp[0];
+                }
+            }
+            else
+                sprintf(clEti, "%X", CL_p);
+            //**
             CL_global[line_counter] = CL_n; //Se guarda el contador de localidades en el arreglo
             getByte(byte, total_bytes);
             opcode = (int) strtol(byte, NULL, 16);
@@ -175,7 +192,7 @@ int main(int argc, char **argv) {
 }
 
 uint16_t getCL(char *filename){
-		FILE *file = fopen(filename, "r");
+    FILE *file = fopen(filename, "r");
 	if (file == NULL){
         puts("Unable to open the file");
     }
@@ -188,7 +205,7 @@ uint16_t getCL(char *filename){
 		CL_local[2] = line[5];
 		CL_local[3] = line[6];
 		fclose(file);
-		return (uint16_t) strtol(CL_local, NULL, 16);;
+		return (uint16_t) strtol(CL_local, NULL, 16);
 	}
 	return 0x00;
 }
@@ -203,7 +220,6 @@ char *getEti_p(uint16_t cl){
             while (symbols[index] != 0x0000 && index < 100){  //Se recorre el arreglo hasta encontrar el 0x00
                 index++;
             }
-
             if(index < 100){
                 symbols[index] = cl;
                 strcpy(eti, "ETI");
@@ -224,21 +240,21 @@ char *getEti_p(uint16_t cl){
 
     while (symbols[index] != 0x0000 && index < 100){	//Busca por etiquetas ya definidas
         if (cl == symbols[index]){		//Si lo encuentra
-			strcpy(eti, "ETI");
-			sprintf(aux, "%d", index); 	//Se copia el entero en un arreglo
-			strcat(eti, aux);			//Se concatena el entero con la palabra ETI
-			return eti;
-		}
+            strcpy(eti, "ETI");
+            sprintf(aux, "%d", index); 	//Se copia el entero en un arreglo
+            strcat(eti, aux);			//Se concatena el entero con la palabra ETI
+            return eti;
+        }
         index++;
     }
     if(bandera == 1){
         if(symbols[index+1] != 0x0000){  //Validación para saber si hay etiquetas después de la etiqueta con valor = 0
             index++;
             while (symbols[index] != 0x0000 && index < 100){
-                if (cl == symbols[index]){
+                if (cl == symbols[index]){		//Si lo encuentra
                     strcpy(eti, "ETI");
-                    sprintf(aux, "%d", index);
-                    strcat(eti, aux);
+                    sprintf(aux, "%d", index); 	//Se copia el entero en un arreglo
+                    strcat(eti, aux);			//Se concatena el entero con la palabra ETI
                     return eti;
                 }
                 index++;
@@ -247,15 +263,16 @@ char *getEti_p(uint16_t cl){
         else
             index++;
     }
-	if(index < 100){			//Agrega etiquetas no definidas
-		symbols[index] = cl;
-		strcpy(eti, "ETI");
-		sprintf(aux, "%d", index);
-		strcat(eti, aux);
+    if(index < 100){			//Agrega etiquetas no definidas
+        symbols[index] = cl;
+        strcpy(eti, "ETI");
+        sprintf(aux, "%d", index);
+        strcat(eti, aux);
         eti_counter++;
-		return eti;
-	}else
+        return eti;
+    }else
         return "ERROR";				//Algún error
+
 }
 
 void getByte(char argument[], char line[]){
@@ -788,6 +805,7 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 	char argument2[20] = {0};  //byte menos significativo
 	//int nextbyte;
     char name[10];
+    uint16_t cl;
 
 	switch(opcode){
 
@@ -836,12 +854,20 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
             getByte(argument1, line);
 			strcpy(buffer, argument1);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
-			cl = cl + currentCL;
-			cl = cl + 0x02;
+
+			if(cl <= 0x7F){
+                cl = cl + currentCL;
+                cl = cl + 0x02;
+
+			}else{
+			    cl = cl + 0xFF00;
+			    cl = (cl ^ 0xFFFF) + 1;
+			    cl = currentCL - cl + 0x02;
+			}
+
 			if(cl > 0xFF){
                 sprintf(argument1, "%X", cl);
-                argument2[0] = argument1[strlen(argument1)-2];
-                argument2[1] = argument1[strlen(argument1)-1];
+                strcpy(argument2, argument1);
                 cl = (uint16_t)strtol(argument2, NULL, 16);
 			}
             strcpy (name, getEti_p(cl));
@@ -872,12 +898,20 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 			getByte(argument1, line);
 			strcpy(buffer, argument1);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
-			cl = cl + currentCL;
-			cl = cl + 0x02;
+
+			if(cl <= 0x7F){
+                cl = cl + currentCL;
+                cl = cl + 0x02;
+
+			}else{
+			    cl = cl + 0xFF00;
+			    cl = (cl ^ 0xFFFF) + 1;
+			    cl = currentCL - cl + 0x02;
+			}
+
 			if(cl > 0xFF){
                 sprintf(argument1, "%X", cl);
-                argument2[0] = argument1[strlen(argument1)-2];
-                argument2[1] = argument1[strlen(argument1)-1];
+                strcpy(argument2, argument1);
                 cl = (uint16_t)strtol(argument2, NULL, 16);
 			}
             strcpy (name, getEti_p(cl));
@@ -905,12 +939,19 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 			getByte(argument1, line);
 			strcpy(buffer, argument1);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
-			cl = cl + currentCL;
-			cl = cl + 0x02;
+
+			if(cl <= 0x7F){
+                cl = cl + currentCL;
+                cl = cl + 0x02;
+
+			}else{
+			    cl = cl + 0xFF00;
+			    cl = (cl ^ 0xFFFF) + 1;
+			    cl = currentCL - cl + 0x02;
+			}
 			if(cl > 0xFF){
                 sprintf(argument1, "%X", cl);
-                argument2[0] = argument1[strlen(argument1)-2];
-                argument2[1] = argument1[strlen(argument1)-1];
+                strcpy(argument2, argument1);
                 cl = (uint16_t)strtol(argument2, NULL, 16);
 			}
             strcpy (name, getEti_p(cl));
@@ -945,13 +986,30 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
             getByte(argument1, line);
 			strcpy(buffer, argument1);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
-			cl = cl + currentCL;
-			cl = cl + 0x02;
+
+			if(cl <= 0x7F){
+                cl = cl + currentCL;
+                cl = cl + 0x02;
+
+			}else{
+			    cl = cl + 0xFF00;
+			    cl = (cl ^ 0xFFFF) + 1;
+			    cl = currentCL - cl + 0x02;
+			}
+
 			if(cl > 0xFF){
                 sprintf(argument1, "%X", cl);
-                argument2[0] = argument1[strlen(argument1)-2];
-                argument2[1] = argument1[strlen(argument1)-1];
+                //sprintf(clEti, "%X", cl);
+                //printf("\n\n%X\n\n", cl);//*********************
+                /*
+                argument2[0] = clEti[0];
+                argument2[1] = clEti[1];
+                argument2[2] = argument1[strlen(argument1)-2];
+                argument2[3] = argument1[strlen(argument1)-1];
+                */
+                strcpy(argument2, argument1);
                 cl = (uint16_t)strtol(argument2, NULL, 16);
+                //printf("\n\n%X\n\n", cl);//*********************
 			}
             strcpy (name, getEti_p(cl));
 			strcpy(buffer, "JR Z, ");
@@ -982,12 +1040,20 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 			getByte(argument1, line);
 			strcpy(buffer, argument1);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
-			cl = cl + currentCL;
-			cl = cl + 0x02;
+
+			if(cl <= 0x7F){
+                cl = cl + currentCL;
+                cl = cl + 0x02;
+
+			}else{
+			    cl = cl + 0xFF00;
+			    cl = (cl ^ 0xFFFF) + 1;
+			    cl = currentCL - cl + 0x02;
+			}
+
 			if(cl > 0xFF){
                 sprintf(argument1, "%X", cl);
-                argument2[0] = argument1[strlen(argument1)-2];
-                argument2[1] = argument1[strlen(argument1)-1];
+                strcpy(argument2, argument1);
                 cl = (uint16_t)strtol(argument2, NULL, 16);
 			}
             strcpy (name, getEti_p(cl));
@@ -1022,12 +1088,20 @@ char * getInstruction(int opcode, char line[], char byte[], uint16_t currentCL) 
 			getByte(argument1, line);
 			strcpy(buffer, argument1);
 			cl = (uint16_t)strtol(buffer, NULL, 16);
-			cl = cl + currentCL;
-			cl = cl + 0x02;
+
+			if(cl <= 0x7F){
+                cl = cl + currentCL;
+                cl = cl + 0x02;
+
+			}else{
+			    cl = cl + 0xFF00;
+			    cl = (cl ^ 0xFFFF) + 1;
+			    cl = currentCL - cl + 0x02;
+			}
+
 			if(cl > 0xFF){
                 sprintf(argument1, "%X", cl);
-                argument2[0] = argument1[strlen(argument1)-2];
-                argument2[1] = argument1[strlen(argument1)-1];
+                strcpy(argument2, argument1);
                 cl = (uint16_t)strtol(argument2, NULL, 16);
 			}
             strcpy (name, getEti_p(cl));
