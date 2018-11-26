@@ -593,6 +593,11 @@ char *newSwitch(char line[], char ins[]){  //contiene instrucciones con IX o IY
                 strcpy(buffer, "LD (");
                 strcat(buffer, ins);
                 return buffer;
+            case 0x39:                                  //ADD IX, SP / ADD IY, SP
+            	strcpy(buffer, "ADD ");
+            	strcat(buffer, ins);
+            	strcat(buffer, ", SP");
+                return buffer;
             case 0x46:                                  //LD B, (IX+d) / LD B, (IY+d)
                 getByte(argument1, line);
                 strcpy(argument2, "");
@@ -632,7 +637,7 @@ char *newSwitch(char line[], char ins[]){  //contiene instrucciones con IX o IY
                 getByte(argument1, line);
                 strcpy(argument2, "");
                 strcat(ins, "+");
-                completeNewSwitch("LD H, (", ins, argument1, argument2);
+                completeNewSwitch("LD L, (", ins, argument1, argument2);
                 strcat(buffer, ")");
                 return buffer;
             case 0x70:                                  //LD (IX+d), B / LD (IY+d), B
@@ -668,7 +673,7 @@ char *newSwitch(char line[], char ins[]){  //contiene instrucciones con IX o IY
                 strcpy(argument2, "");
                 strcat(ins, "+");
                 completeNewSwitch("LD (", ins, argument1, argument2);
-                strcat(buffer, "), E");
+                strcat(buffer, "), H");
                 return buffer;
             case 0x75:                                  //LD (IX+d), L / LD (IY+d), L
                 getByte(argument1, line);
@@ -705,7 +710,7 @@ char *newSwitch(char line[], char ins[]){  //contiene instrucciones con IX o IY
                 completeNewSwitch("ADC A, (", ins, argument1, argument2);
                 strcat(buffer, ")");
                 return buffer;
-            case 0x96:                                  //SUB A, (IX+d) / SUB A, (IY+d)
+            case 0x96:                                  //SUB (IX+d) / SUB (IY+d)
                 getByte(argument1, line);
                 strcpy(argument2, "");
                 strcat(ins, "+");
