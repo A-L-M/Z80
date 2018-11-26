@@ -368,12 +368,6 @@ char *newSwitch(char line[], char ins[]){  //contiene instrucciones con IX o IY
                         completeNewSwitch("SRA (", ins, argument1, argument2);
                         strcat(buffer, ")");
                         return buffer;
-                    case 0x36:                                  //SLS (IX+d) / SRA (IY+d)
-                        strcpy(argument2, "");
-                        strcat(ins, "+");
-                        completeNewSwitch("SLS (", ins, argument1, argument2);
-                        strcat(buffer, ")");
-                        return buffer;
 					case 0x3E:                                  //SRL (IX+d) / SRA (IY+d)
                         strcpy(argument2, "");
                         strcat(ins, "+");
